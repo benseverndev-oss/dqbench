@@ -168,22 +168,37 @@ dqbench run --adapter path/to/my_adapter.py
 
 ```
 dqbench/
-  adapters/      # Built-in adapters (goldencheck, etc.)
-  generator/     # Tier dataset generators (tier1, tier2, tier3)
-  cli.py         # Typer CLI entrypoint
-  ground_truth.py # Ground truth column registry
-  models.py      # DQBenchFinding, DQBenchResult, etc.
-  runner.py      # Orchestrates adapter + scorer
-  scorer.py      # Recall, precision, F1, DQBench Score
-  report.py      # Rich scorecard output
+  adapters/                  # Built-in adapters (goldencheck, gx, pandera, soda, goldenmatch, goldenpipe, goldenflow)
+  generator/                 # Per-category dataset generators
+    tier1.py / tier2.py / tier3.py        # Detect
+    er_tier1.py … er_tier4.py             # ER (T4 = Mistyped, diagnostic)
+    pipeline_tier1.py … pipeline_tier3.py # Pipeline
+    ocr_company.py                        # OCR Company
+    clean.py                              # Clean (transform-target) variants
+    utils.py                              # Shared fake-data pools
+  cli.py                     # Typer CLI entrypoint
+  runner.py                  # Orchestrates adapter + scorer for each category
+  scorer.py                  # Detect: recall, precision, F1, DQBench Score
+  er_scorer.py               # ER: pair-level P/R/F1
+  transform_scorer.py        # Transform: per-column accuracy
+  pipeline_scorer.py         # Pipeline: composite (transform × dedup)
+  ocr_company_scorer.py      # OCR Company: confidence separation, correction quality
+  ground_truth.py            # Detect ground truth
+  er_ground_truth.py         # ER ground truth (duplicate pairs)
+  pipeline_ground_truth.py   # Pipeline ground truth
+  models.py                  # DQBenchFinding + per-category result/scorecard dataclasses
+  report.py                  # Rich scorecard output (all 5 categories)
 tests/
-  test_tier1_generator.py
-  test_tier2_generator.py
-  test_tier3_generator.py
-  test_scorer.py
-  test_runner.py
-  ...
+  test_generator_tier1.py / test_generator_tier2.py / test_generator_tier3.py
+  test_er_generator.py       # incl. TestERTier4 (Mistyped fixture)
+  test_pipeline_generator.py
+  test_scorer.py / test_er_scorer.py / test_transform_scorer.py / test_pipeline_scorer.py / test_ocr_company_scorer.py
+  test_runner.py / test_er_runner.py / test_pipeline_runner.py / test_ocr_company_runner.py
+  test_cli.py / test_adapters.py / test_adapters_base.py / test_models.py
+  test_er_ground_truth.py / test_er_models.py / test_pipeline_ground_truth.py
 ```
+
+The current suite is 178 tests across all five categories. `pytest --tb=short -v` runs everything.
 
 ### Code style
 
