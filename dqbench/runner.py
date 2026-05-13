@@ -118,20 +118,22 @@ def run_transform_benchmark(
 
 def ensure_er_datasets() -> None:
     """Generate ER datasets if not cached."""
-    if (CACHE_DIR / "er_tier1" / "data.csv").exists():
-        return
     from dqbench.generator.er_tier1 import generate_er_tier1
     from dqbench.generator.er_tier2 import generate_er_tier2
     from dqbench.generator.er_tier3 import generate_er_tier3
+    from dqbench.generator.er_tier4 import generate_er_tier4
 
     generators = [
         (1, generate_er_tier1),
         (2, generate_er_tier2),
         (3, generate_er_tier3),
+        (4, generate_er_tier4),
     ]
 
     for tier_num, gen_fn in generators:
         tier_dir = CACHE_DIR / f"er_tier{tier_num}"
+        if (tier_dir / "data.csv").exists():
+            continue
         tier_dir.mkdir(parents=True, exist_ok=True)
         df, gt = gen_fn()
         df.write_csv(tier_dir / "data.csv")
@@ -149,7 +151,7 @@ def run_er_benchmark(
     from dqbench.er_ground_truth import load_er_ground_truth
 
     ensure_er_datasets()
-    tier_nums = tiers or [1, 2, 3]
+    tier_nums = tiers or [1, 2, 3, 4]
     results = []
 
     for tier_num in tier_nums:
