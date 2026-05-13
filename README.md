@@ -4,7 +4,7 @@ The standard benchmark for data quality tools — detection, transformation, ent
 
 [![PyPI](https://img.shields.io/pypi/v/dqbench?color=d4a017)](https://pypi.org/project/dqbench/)
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
-![Tests](https://img.shields.io/badge/tests-161%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-178%20passing-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-5-orange)
 ![OCR Company Benchmark](https://img.shields.io/badge/OCR%20company-benchmark-included-blue)
 ![ER Benchmark](https://img.shields.io/badge/ER%20benchmark-included-blueviolet)
@@ -81,11 +81,13 @@ dqbench run --adapter my_adapter.py
 | **GoldenMatch** | **with LLM** | **92.6%** | **97.8%** | **94.1%** | **95.30** |
 | GoldenMatch | without LLM | — | — | — | 77.21 |
 
-> GoldenMatch with LLM achieves a 95.30 DQBench ER Score across all three tiers.
+> GoldenMatch with LLM achieves a 95.30 DQBench ER Score across all three scored tiers.
 >
 > **Cost estimate:** ~$0.15-0.30 per full run (3 tiers) with LLM scoring. Without LLM: free, ~23s total. With LLM: ~$0.25, ~670s total. LLM scoring is optional and activates automatically when `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set.
 >
 > **External validation:** GoldenMatch also scores **75.0% F1 on [BPID](https://aclanthology.org/2024.emnlp-industry.40/)** (Amazon's adversarial PII deduplication benchmark, EMNLP 2024), matching Ditto (75.2%) with zero training data. See the [benchmark writeup](https://bensevern.dev/blog/2026-04-02-goldenmatch-bpid-benchmark).
+>
+> **T4 — Mistyped (diagnostic):** since DQBench v1.2 the ER harness also ships a fourth tier where four column names deliberately disagree with their content (`first_name`=hex tokens, `last_name`=numeric IDs, `address`=free-form notes, `industry`=person names). The duplicate signal lives in `email`/`phone`, so a deduper that gates per-column refinements on profiled `col_type` should land near its T1 F1; one that trusts the column name will fire name/address scorers on noise and pay a precision tax. T4 has weight 0 in the composite ER score — it's reported but doesn't move the headline.
 
 Run the comparisons yourself:
 ```bash
@@ -100,6 +102,8 @@ dqbench run goldenmatch
 
 ## Tiers
 
+### Detect
+
 | Tier | Rows | Columns | Domain | Difficulty |
 |------|------|---------|--------|------------|
 | **1 — Basics** | 5,000 | 20 | Customer DB | Obvious errors, baseline |
@@ -107,6 +111,17 @@ dqbench run goldenmatch
 | **3 — Adversarial** | 100,000 | 50 | Healthcare | Encoding traps, semantic errors, cross-column logic |
 
 Each tier has columns WITH planted issues and columns WITHOUT (false positive traps). Tools that flag clean columns lose precision points.
+
+### ER (Entity Resolution)
+
+| Tier | Rows | Dupes | Profile | In composite score |
+|------|------|-------|---------|--------------------|
+| **1 — Easy** | 1,000 | 100 | Case-change, single-char typo, name swap | ✓ (20%) |
+| **2 — Fuzzy** | 5,000 | 750 | Nicknames, missing fields, format change, transposed fields | ✓ (40%) |
+| **3 — Adversarial** | 10,000 | 2,000 | Phonetic variants, address abbrev, split records, unicode, merged records, multi-field corruption | ✓ (40%) |
+| **4 — Mistyped** *(diagnostic)* | 800 | 80 | Person-shaped rows where four column names deliberately disagree with their content | weight 0 |
+
+T4 is a diagnostic tier — same row shape as T1 but with `first_name`=hex, `last_name`=numeric ID, `address`=free-form notes, `industry`=person names. It exists to expose dedupers that fire per-column refinements (name scorers, address normalisation) on noise when the column name doesn't match the data. Reported alongside T1-T3 but excluded from the composite ER score so it doesn't move headline numbers for tools that don't opt in.
 
 ## Scoring
 
@@ -203,8 +218,9 @@ dqbench run --adapter my_er_adapter.py
 | `dqbench run goldenmatch` | Run ER benchmark with GoldenMatch |
 | `dqbench run goldenpipe` | Run Pipeline benchmark with GoldenPipe |
 | `dqbench run placeholder --adapter <path>` | Run a custom OCR Company adapter |
+| `dqbench run goldenmatch --tier 4` | Run only the ER T4 (Mistyped) diagnostic tier |
 | `dqbench generate` | Generate/cache detection datasets |
-| `dqbench generate --er` | Generate ER benchmark datasets |
+| `dqbench generate --er` | Generate ER benchmark datasets (T1-T4) |
 | `dqbench generate --pipeline` | Generate Pipeline benchmark datasets |
 | `dqbench generate --ocr-company` | Generate OCR Company benchmark datasets |
 | `dqbench generate --all` | Generate datasets for all categories |
@@ -212,13 +228,15 @@ dqbench run --adapter my_er_adapter.py
 
 ## Supported Categories
 
-| Category | Tiers | Tests | Description |
-|----------|-------|-------|-------------|
-| **Detect** | 3 | 83 | Data quality issue detection |
-| **Transform** | 3 | — | Data cleaning and normalization |
-| **ER** | 3 | — | Entity resolution and deduplication |
-| **Pipeline** | 3 | — | End-to-end pipeline orchestration |
-| **OCR Company** | 3 | — | OCR company-name confidence and correction |
+| Category | Tiers | Description |
+|----------|-------|-------------|
+| **Detect** | 3 | Data quality issue detection |
+| **Transform** | 3 | Data cleaning and normalization |
+| **ER** | 3 scored + 1 diagnostic (T4 Mistyped) | Entity resolution and deduplication |
+| **Pipeline** | 3 | End-to-end pipeline orchestration |
+| **OCR Company** | 3 | OCR company-name confidence and correction |
+
+Full suite: 178 tests passing across all five categories.
 
 ## OCR Company Benchmark
 
@@ -245,7 +263,7 @@ Run with a custom OCR Company adapter:
 dqbench run placeholder --adapter examples/ocr_company_adapter.py
 ```
 
-5 categories, 15 tiers, 164+ tests.
+5 categories, 16 tiers (15 scored + T4 Mistyped diagnostic), 178 tests passing.
 
 ## Built-in Adapters
 
@@ -262,9 +280,10 @@ Want to add your tool? See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Reproducibility
 
-- Datasets are generated deterministically (`random.seed(42)`, stdlib only)
+- Datasets are generated deterministically with a per-tier `random.Random(42)` instance (stdlib only, no numpy)
 - Canonical datasets committed as release artifacts
 - Version-locked: published benchmark versions are immutable
+- Cached datasets live under `~/.dqbench/datasets/`; regenerate with `dqbench generate --force`
 
 ## License
 
