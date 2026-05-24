@@ -32,6 +32,9 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
     # GoldenPipe (Pipeline)
     "goldenpipe":  "dqbench.adapters.goldenpipe_adapter:GoldenPipeAdapter",
+    # Full Golden suite (Pipeline): zero-config engine vs hand-tuned chain
+    "goldensuite-zero":  "dqbench.adapters.goldenpipe_adapter:GoldenSuiteZeroConfigAdapter",
+    "goldensuite-tuned": "dqbench.adapters.goldenpipe_adapter:GoldenSuiteTunedAdapter",
 }
 
 # Order for comparison tables (by category)
@@ -50,7 +53,7 @@ ALL_ADAPTER_NAMES = [
 ]
 
 ER_ADAPTER_NAMES = ["goldenmatch"]
-PIPELINE_ADAPTER_NAMES = ["goldenpipe"]
+PIPELINE_ADAPTER_NAMES = ["goldenpipe", "goldensuite-zero", "goldensuite-tuned"]
 OCR_COMPANY_ADAPTER_NAMES: list[str] = []
 
 

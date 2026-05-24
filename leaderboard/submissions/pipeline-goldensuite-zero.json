@@ -1,0 +1,17 @@
+{
+  "id": "pipeline-goldensuite-zero",
+  "category": "pipeline",
+  "tool": "GoldenSuite (zero-config)",
+  "adapter": "goldensuite-zero",
+  "install": [
+    "goldencheck==1.2.0",
+    "goldenflow==1.1.6",
+    "goldenmatch==1.18.1",
+    "goldenpipe==1.2.0",
+    "jellyfish==1.2.1",
+    "RapidFuzz==3.14.5"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Full Golden suite via GoldenPipe's engine, zero-config (load->check->flow->dedupe). No LLM."
+}

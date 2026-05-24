@@ -1,6 +1,23 @@
 [
   {
     "category": "pipeline",
+    "tool": "GoldenSuite (tuned)",
+    "tool_version": "1.2.0",
+    "score": 75.59,
+    "tier_scores": {
+      "1": 0.7997,
+      "2": 0.817,
+      "3": 0.6729
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldensuite-tuned",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Full Golden suite hand-tuned: GoldenCheck safe auto-fix + tuned GoldenFlow/GoldenMatch. No LLM."
+  },
+  {
+    "category": "pipeline",
     "tool": "GoldenPipe",
     "tool_version": "1.2.0",
     "score": 71.38,
@@ -15,5 +32,22 @@
     "dqbench_version": "1.0.0",
     "source": "reproduced",
     "notes": "Golden suite reference pipeline tool, isolated env, no LLM scorer."
+  },
+  {
+    "category": "pipeline",
+    "tool": "GoldenSuite (zero-config)",
+    "tool_version": "1.2.0",
+    "score": 33.85,
+    "tier_scores": {
+      "1": 0.4981,
+      "2": 0.2887,
+      "3": 0.3086
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldensuite-zero",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Full Golden suite via GoldenPipe's engine, zero-config (load->check->flow->dedupe). No LLM."
   }
 ]

@@ -32,4 +32,6 @@ Published results across all five categories. Higher is better; the score is the
 
 | Rank | Tool | Version | T1 | T2 | T3 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | GoldenPipe | 1.2.0 | 80.0% | 81.7% | 56.8% | 71.38 | DQBench maintainers | reproduced | 2026-05-24 |
+| 1 | GoldenSuite (tuned) | 1.2.0 | 80.0% | 81.7% | 67.3% | 75.59 | DQBench maintainers | reproduced | 2026-05-24 |
+| 2 | GoldenPipe | 1.2.0 | 80.0% | 81.7% | 56.8% | 71.38 | DQBench maintainers | reproduced | 2026-05-24 |
+| 3 | GoldenSuite (zero-config) | 1.2.0 | 49.8% | 28.9% | 30.9% | 33.85 | DQBench maintainers | reproduced | 2026-05-24 |

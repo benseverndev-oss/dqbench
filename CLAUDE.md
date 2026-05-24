@@ -6,7 +6,7 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (239 passing)
+pytest --tb=short -v             # Run tests (241 passing)
 ruff check .                     # Lint
 dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
@@ -39,7 +39,7 @@ dqbench/
 ├── er_ground_truth.py           # ER duplicate-pair ground truth
 ├── pipeline_ground_truth.py     # Pipeline ground truth
 ├── generator/                   # Per-category dataset generators (tier1-3 detect, er_tier1-4, pipeline_tier1-3, ocr_company)
-└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow)
+└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow, GoldenSuite full pipeline)
 ```
 
 ## Categories & Tiers
