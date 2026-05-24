@@ -523,3 +523,67 @@ def report_ocr_company_json(scorecard: OCRCompanyScorecard, output: IO[str]) -> 
     }
     json.dump(data, output, indent=2)
     output.write("\n")
+
+
+# ---------------------------------------------------------------------------
+# Leaderboard
+# ---------------------------------------------------------------------------
+
+
+def report_leaderboard_rich(entries, category: str | None = None) -> None:
+    """Render a ranked leaderboard, one table per category."""
+    from dqbench.leaderboard import CATEGORY_META, CATEGORY_ORDER, ranked_by_category
+
+    console = Console()
+    console.print()
+    console.rule("[bold cyan]DQBench Leaderboard[/bold cyan]")
+    console.print()
+
+    by_cat = ranked_by_category(entries)
+    if not by_cat:
+        console.print(
+            "[yellow]No results yet.[/yellow] Run [bold]dqbench run <adapter>[/bold] "
+            "to populate the leaderboard."
+        )
+        console.print()
+        return
+
+    order = [category] if category else CATEGORY_ORDER
+    for cat in order:
+        group = by_cat.get(cat)
+        if not group:
+            continue
+        meta = CATEGORY_META[cat]
+        all_tiers = sorted({t for e in group for t in e.tier_scores})
+
+        table = Table(
+            title=f"{meta['label']}",
+            box=box.HEAVY_HEAD,
+            show_header=True,
+            header_style="bold white on dark_blue",
+            border_style="cyan",
+            show_lines=True,
+        )
+        table.add_column("#", justify="right", style="bold", min_width=3)
+        table.add_column("Tool", style="bold", min_width=20, no_wrap=True)
+        table.add_column("Version", justify="left", style="dim", min_width=7)
+        for tier in all_tiers:
+            table.add_column(f"T{tier}", justify="right", min_width=7)
+        table.add_column("Score", justify="right", style="bold green", min_width=7)
+
+        for rank, e in enumerate(group, 1):
+            row = [str(rank), e.tool_name, e.tool_version]
+            for tier in all_tiers:
+                v = e.tier_scores.get(tier)
+                row.append(f"{v:.1%}" if v is not None else "—")
+            row.append(f"{e.score:.2f}")
+            table.add_row(*row)
+
+        console.print(table)
+
+        leader = group[0]
+        console.print(
+            f"[bold]Leader:[/bold] [bold green]{leader.tool_name}[/bold green]  "
+            f"[dim]{meta['label']} Score = {leader.score:.2f}[/dim]"
+        )
+        console.print()

@@ -83,17 +83,18 @@ def run(
     er: bool = typer.Option(False, "--er", help="Run only ER adapters (with 'all')"),
     pipeline: bool = typer.Option(False, "--pipeline", help="Run only Pipeline adapters (with 'all')"),
     ocr_company: bool = typer.Option(False, "--ocr-company", help="Run only OCR Company adapters (with 'all')"),
+    save: bool = typer.Option(True, "--save/--no-save", help="Record the result on the leaderboard"),
 ) -> None:
     """Run benchmark against a validation tool."""
     if adapter_name == "all":
         if er:
-            _run_all(tier=tier, category="er")
+            _run_all(tier=tier, category="er", save=save)
         elif pipeline:
-            _run_all(tier=tier, category="pipeline")
+            _run_all(tier=tier, category="pipeline", save=save)
         elif ocr_company:
-            _run_all(tier=tier, category="ocr-company")
+            _run_all(tier=tier, category="ocr-company", save=save)
         else:
-            _run_all(tier=tier)
+            _run_all(tier=tier, save=save)
         return
 
     adapter = _load_adapter(adapter_name, adapter_path)
@@ -142,8 +143,12 @@ def run(
             from dqbench.report import report_rich
             report_rich(scorecard)
 
+    if save:
+        from dqbench.leaderboard import save_scorecard
+        save_scorecard(scorecard, category)
 
-def _run_all(tier: Optional[int] = None, category: str | None = None) -> None:
+
+def _run_all(tier: Optional[int] = None, category: str | None = None, save: bool = True) -> None:
     """Run all registered adapters and print a comparison table."""
     tiers = [tier] if tier else None
 
@@ -157,6 +162,7 @@ def _run_all(tier: Optional[int] = None, category: str | None = None) -> None:
                 adapter = _load_adapter(name)
                 sc = run_er_benchmark(adapter, tiers=tiers)
                 scorecards.append(sc)
+                _save_result(sc, "er", save)
                 typer.echo(f"  Done — score: {sc.dqbench_er_score:.2f}", err=True)
             except Exception as e:
                 typer.echo(f"  FAILED: {e}", err=True)
@@ -173,6 +179,7 @@ def _run_all(tier: Optional[int] = None, category: str | None = None) -> None:
                 adapter = _load_adapter(name)
                 sc = run_pipeline_benchmark(adapter, tiers=tiers)
                 scorecards.append(sc)
+                _save_result(sc, "pipeline", save)
                 typer.echo(f"  Done — score: {sc.dqbench_pipeline_score:.2f}", err=True)
             except Exception as e:
                 typer.echo(f"  FAILED: {e}", err=True)
@@ -194,11 +201,20 @@ def _run_all(tier: Optional[int] = None, category: str | None = None) -> None:
             adapter = _load_adapter(name)
             sc = run_benchmark(adapter, tiers=tiers)
             scorecards.append(sc)
+            _save_result(sc, "detect", save)
             typer.echo(f"  Done — score: {sc.dqbench_score:.2f}", err=True)
         except Exception as e:
             typer.echo(f"  FAILED: {e}", err=True)
 
     report_comparison(scorecards)
+
+
+def _save_result(scorecard, category: str, save: bool) -> None:
+    """Record a scorecard on the leaderboard, ignoring persistence errors."""
+    if not save:
+        return
+    from dqbench.leaderboard import save_scorecard
+    save_scorecard(scorecard, category)
 
 
 @app.command()
@@ -247,6 +263,36 @@ def generate(
 def results() -> None:
     """Show results from last run."""
     typer.echo("No cached results. Run 'dqbench run <adapter>' first.")
+
+
+@app.command()
+def leaderboard(
+    category: Optional[str] = typer.Option(
+        None, "--category", "-c",
+        help="Filter to one category: detect | transform | er | pipeline | ocr-company",
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+    clear: bool = typer.Option(False, "--clear", help="Delete all recorded results"),
+) -> None:
+    """Show the ranked leaderboard of benchmarked tools across categories."""
+    from dqbench.leaderboard import CATEGORY_META, clear_results, entries_to_json, load_entries
+
+    if clear:
+        clear_results()
+        typer.echo("Leaderboard cleared.")
+        return
+
+    if category is not None and category not in CATEGORY_META:
+        raise typer.Exit(
+            f"Unknown category: '{category}'. Choose from: {', '.join(CATEGORY_META)}"
+        )
+
+    entries = load_entries(category=category)
+    if json_output:
+        entries_to_json(entries, sys.stdout)
+    else:
+        from dqbench.report import report_leaderboard_rich
+        report_leaderboard_rich(entries, category=category)
 
 
 def _load_adapter(name: str, path: Path | None = None):

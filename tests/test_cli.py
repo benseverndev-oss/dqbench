@@ -40,3 +40,93 @@ def test_generate_help():
 def test_generate_ocr_company():
     result = runner.invoke(app, ["generate", "--ocr-company"])
     assert result.exit_code == 0
+
+
+def test_leaderboard_help():
+    result = runner.invoke(app, ["leaderboard", "--help"])
+    assert result.exit_code == 0
+    assert "leaderboard" in result.stdout.lower()
+
+
+def test_leaderboard_empty(monkeypatch, tmp_path):
+    import dqbench.leaderboard as lb
+    monkeypatch.setattr(lb, "RESULTS_DIR", tmp_path)
+    result = runner.invoke(app, ["leaderboard"])
+    assert result.exit_code == 0
+    assert "No results yet" in result.stdout
+
+
+def test_leaderboard_unknown_category():
+    result = runner.invoke(app, ["leaderboard", "--category", "bogus"])
+    assert result.exit_code != 0
+
+
+CUSTOM_ADAPTER = '''
+from pathlib import Path
+from dqbench.adapters.base import DQBenchAdapter
+from dqbench.models import DQBenchFinding
+
+
+class MiniAdapter(DQBenchAdapter):
+    @property
+    def name(self) -> str:
+        return "MiniTool"
+
+    @property
+    def version(self) -> str:
+        return "9.9"
+
+    def validate(self, csv_path: Path) -> list[DQBenchFinding]:
+        return []
+'''
+
+
+def test_leaderboard_populated_after_run(monkeypatch, tmp_path):
+    import json as _json
+
+    import dqbench.leaderboard as lb
+    monkeypatch.setattr(lb, "RESULTS_DIR", tmp_path / "results")
+
+    adapter_file = tmp_path / "mini_adapter.py"
+    adapter_file.write_text(CUSTOM_ADAPTER)
+
+    run_result = runner.invoke(app, ["run", "mini", "--adapter", str(adapter_file), "--tier", "1"])
+    assert run_result.exit_code == 0, run_result.output
+
+    board = runner.invoke(app, ["leaderboard", "--json"])
+    assert board.exit_code == 0
+    data = _json.loads(board.stdout)
+    assert data["detect"][0]["tool_name"] == "MiniTool"
+    assert data["detect"][0]["rank"] == 1
+
+
+def test_run_no_save_skips_leaderboard(monkeypatch, tmp_path):
+    import dqbench.leaderboard as lb
+    monkeypatch.setattr(lb, "RESULTS_DIR", tmp_path / "results")
+
+    adapter_file = tmp_path / "mini_adapter.py"
+    adapter_file.write_text(CUSTOM_ADAPTER)
+
+    run_result = runner.invoke(
+        app, ["run", "mini", "--adapter", str(adapter_file), "--tier", "1", "--no-save"]
+    )
+    assert run_result.exit_code == 0
+    assert lb.load_entries(results_dir=tmp_path / "results") == []
+
+
+def test_leaderboard_clear(monkeypatch, tmp_path):
+    import dqbench.leaderboard as lb
+    from dqbench.models import Scorecard, TierResult
+
+    monkeypatch.setattr(lb, "RESULTS_DIR", tmp_path)
+    t = TierResult(
+        tier=1, recall=0.0, precision=0.0, f1=0.0, false_positive_rate=0.0,
+        time_seconds=0.1, memory_mb=1.0, findings_count=0,
+        issue_recall=0.5, issue_precision=0.5, issue_f1=0.5,
+    )
+    lb.save_scorecard(Scorecard("ToolA", "1.0", [t]), "detect", results_dir=tmp_path)
+
+    result = runner.invoke(app, ["leaderboard", "--clear"])
+    assert result.exit_code == 0
+    assert "cleared" in result.stdout.lower()
+    assert lb.load_entries(results_dir=tmp_path) == []
