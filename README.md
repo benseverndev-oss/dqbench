@@ -285,7 +285,7 @@ dqbench run --adapter my_er_adapter.py
 | **Pipeline** | 3 | End-to-end pipeline orchestration |
 | **OCR Company** | 3 | OCR company-name confidence and correction |
 
-Full suite: 233 tests passing across all five categories.
+Full suite: 239 tests passing across all five categories.
 
 ## OCR Company Benchmark
 

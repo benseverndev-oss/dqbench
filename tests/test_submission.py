@@ -262,6 +262,51 @@ def test_verify_missing_entry(tmp_path):
     assert any("no committed entry" in e for e in errors)
 
 
+@pytest.mark.parametrize("category,runner_attr", [
+    ("detect", "run_benchmark"),
+    ("transform", "run_transform_benchmark"),
+    ("er", "run_er_benchmark"),
+    ("pipeline", "run_pipeline_benchmark"),
+    ("ocr-company", "run_ocr_company_benchmark"),
+])
+def test_run_adapter_json_dispatches_per_category(monkeypatch, category, runner_attr):
+    """Each category routes to its own runner + JSON serializer."""
+    from dqbench import report, runner
+    from dqbench.submission import run_adapter_json
+
+    sentinel = object()
+    called = {}
+
+    def fake_runner(adapter):
+        called["runner"] = runner_attr
+        return sentinel
+
+    def fake_json(scorecard, buf):
+        assert scorecard is sentinel
+        buf.write('{"ok": true}')
+
+    json_attr = {
+        "run_benchmark": "report_json",
+        "run_transform_benchmark": "report_transform_json",
+        "run_er_benchmark": "report_er_json",
+        "run_pipeline_benchmark": "report_pipeline_json",
+        "run_ocr_company_benchmark": "report_ocr_company_json",
+    }[runner_attr]
+
+    monkeypatch.setattr(runner, runner_attr, fake_runner)
+    monkeypatch.setattr(report, json_attr, fake_json)
+
+    result = run_adapter_json(object(), category)
+    assert result == {"ok": True}
+    assert called["runner"] == runner_attr
+
+
+def test_run_adapter_json_unknown_category():
+    from dqbench.submission import run_adapter_json
+    with pytest.raises(ValueError):
+        run_adapter_json(object(), "nope")
+
+
 def test_validate_store_flags_bad_entry(tmp_path):
     path = tmp_path / "leaderboard" / "results" / "detect.json"
     path.parent.mkdir(parents=True)

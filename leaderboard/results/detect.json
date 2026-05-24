@@ -1,6 +1,23 @@
 [
   {
     "category": "detect",
+    "tool": "GoldenCheck",
+    "tool_version": "1.2.0",
+    "score": 88.4,
+    "tier_scores": {
+      "1": 0.9412,
+      "2": 0.9091,
+      "3": 0.8302
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldencheck",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+  },
+  {
+    "category": "detect",
     "tool": "Pandera (best-effort)",
     "tool_version": "0.31.1",
     "score": 32.51,

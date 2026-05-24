@@ -1,0 +1,12 @@
+{
+  "id": "transform-goldenflow",
+  "category": "transform",
+  "tool": "GoldenFlow",
+  "adapter": "goldenflow",
+  "install": [
+    "goldenflow==1.1.6"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+}

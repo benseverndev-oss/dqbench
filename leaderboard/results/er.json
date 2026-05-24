@@ -1,0 +1,20 @@
+[
+  {
+    "category": "er",
+    "tool": "GoldenMatch",
+    "tool_version": "1.18.1",
+    "score": 46.18,
+    "tier_scores": {
+      "1": 0.8696,
+      "2": 0.6865,
+      "3": 0.0332,
+      "4": 0.6777
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldenmatch",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+  }
+]

@@ -6,7 +6,7 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (233 passing)
+pytest --tb=short -v             # Run tests (239 passing)
 ruff check .                     # Lint
 dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
@@ -93,7 +93,7 @@ The adapter interface is the primary extension point. Each adapter implements a 
 
 ## Performance & Testing
 
-- Always run `pytest --tb=short -v` before committing. All 233 tests must pass.
+- Always run `pytest --tb=short -v` before committing. All 239 tests must pass.
 - Always run `ruff check .` for linting.
 - Tier generators use a local `random.Random(42)` instance for deterministic output.
 - Do not use numpy or any external RNG; stick to stdlib `random.Random(42)`.

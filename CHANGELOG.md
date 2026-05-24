@@ -5,7 +5,8 @@
 ### Added
 - **Published leaderboard with a reproducibility gate** — a version-controlled, community-submittable board where **results are only accepted if a GitHub Action can reproduce them**. Each entry is backed by a manifest under `leaderboard/submissions/` (tool, category, adapter, pinned packages). New commands: `dqbench reproduce <manifest> [--write]` (run the manifest, optionally record it), `dqbench verify <manifest>` (reproduce and confirm the committed numbers match), `dqbench publish [--check]` (regenerate/verify `LEADERBOARD.md`), and `dqbench leaderboard --source repo`. `dqbench run --adapter` now also accepts a `module:Class` reference.
 - CI: `.github/workflows/leaderboard.yml` gates PRs with `dqbench publish --check` (structural) and `dqbench verify` on each changed manifest (reproduction); `.github/workflows/leaderboard-refresh.yml` audits all manifests on a schedule.
-- Seeded the published Detect board with reproduced, version-pinned runs for **Pandera** and **Soda** (zero-config / auto-profiled / best-effort). Great Expectations was excluded — its auto-profiling is non-deterministic and fails the reproducibility gate.
+- Seeded the published board across four categories with reproduced, version-pinned runs: **Detect** (GoldenCheck 88.40, plus Pandera/Soda baselines), **Transform** (GoldenFlow 100.0), **ER** (GoldenMatch), **Pipeline** (GoldenPipe 71.55). Great Expectations was excluded — its auto-profiling is non-deterministic and fails the reproducibility gate. OCR Company is left open for submissions (no installable third-party tool; the example adapter peeks at ground truth).
+- Note: GoldenMatch 1.18.1 reproduces at **46.18** on the standard ER tiers (T3 adversarial collapses to ~3% F1), below the previously reported 77.21 — surfaced by the reproducibility gate.
 - `dqbench/submission.py` (manifests, reproduce/verify, repo store, validation, Markdown rendering) and `tests/test_submission.py`.
 - **Local leaderboard** — `dqbench run` records each result under `~/.dqbench/results/<category>.json` (latest run per tool per category wins), and `dqbench leaderboard` renders a ranked board across all five categories. Supports `--category/-c` to filter, `--json` for machine-readable output, and `--clear` to reset. Use `dqbench run <adapter> --no-save` to benchmark without recording.
 - `dqbench/leaderboard.py` with persistence/loading/ranking helpers and `tests/test_leaderboard.py`.
@@ -16,7 +17,7 @@
 ### Changed
 - `ensure_er_datasets()` in `dqbench/runner.py` is now per-tier idempotent — users with an existing T1-T3 cache pick up T4 without needing `dqbench generate --force`.
 - Default ER tier list extended to `[1, 2, 3, 4]`; existing callers passing explicit `tiers=` are unaffected.
-- Full test suite: 233 passing (was 161).
+- Full test suite: 239 passing (was 161).
 
 ## v1.1.0 — 2026-03-29
 

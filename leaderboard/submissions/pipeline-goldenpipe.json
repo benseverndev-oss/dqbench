@@ -1,0 +1,14 @@
+{
+  "id": "pipeline-goldenpipe",
+  "category": "pipeline",
+  "tool": "GoldenPipe",
+  "adapter": "goldenpipe",
+  "install": [
+    "goldenpipe==1.2.0",
+    "goldenflow==1.1.6",
+    "goldenmatch==1.18.1"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+}

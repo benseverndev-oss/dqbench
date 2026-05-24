@@ -21,6 +21,11 @@ runner and rejects the entry if the committed numbers don't match what it reprod
 This means you cannot hand-edit a score onto the board — the number has to come from a
 reproducible run of the actual tool on the standard datasets.
 
+The board is seeded with the Golden suite reference tools — **GoldenCheck** (Detect),
+**GoldenFlow** (Transform), **GoldenMatch** (ER), **GoldenPipe** (Pipeline) — plus
+Pandera and Soda baselines for Detect. **OCR Company** is open: there's no installable
+third-party tool yet, so the first reproducible submission seeds it.
+
 ## How scoring works
 
 Each entry carries the tier-weighted composite **score** (0-100) for one category plus

@@ -1,0 +1,12 @@
+{
+  "id": "er-goldenmatch",
+  "category": "er",
+  "tool": "GoldenMatch",
+  "adapter": "goldenmatch",
+  "install": [
+    "goldenmatch==1.18.1"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+}
