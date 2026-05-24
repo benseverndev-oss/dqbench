@@ -10,6 +10,7 @@ from dqbench.submission import (
     add_submission,
     check_published,
     infer_category,
+    load_reference,
     load_store,
     publish,
     render_markdown,
@@ -260,6 +261,38 @@ def test_verify_missing_entry(tmp_path):
     manifest = _mini_manifest(tmp_path)  # manifest exists, but nothing recorded
     errors = verify(manifest, root=tmp_path)
     assert any("no committed entry" in e for e in errors)
+
+
+def test_ungated_manifest_routes_to_reference_store(tmp_path):
+    manifest = _mini_manifest(tmp_path)
+    manifest["gated"] = False
+    reproduce_and_write(manifest, root=tmp_path)
+    # Goes to the ungated reference store, not the gated results store.
+    assert load_store(tmp_path, category="detect") == []
+    ref = load_reference(tmp_path, category="detect")
+    assert len(ref) == 1 and ref[0].tool == "MiniTool"
+
+
+def test_verify_skips_ungated_manifest(tmp_path):
+    manifest = _mini_manifest(tmp_path)
+    manifest["gated"] = False
+    assert verify(manifest, root=tmp_path) == []  # not gate-verified
+
+
+def test_reference_entry_needs_no_manifest(tmp_path):
+    # A reference entry with no submissions/ manifest must still pass validate_store.
+    from dqbench.submission import add_reference
+    add_reference(submission_from_run(_detect_run("Auto", score=99.0), submitter="Me"), root=tmp_path)
+    assert validate_store(tmp_path) == []
+
+
+def test_render_markdown_reference_section():
+    gated = [submission_from_run(_detect_run("GatedTool", score=50.0), submitter="Me")]
+    ref = [submission_from_run(_detect_run("AutoTool", score=99.0), submitter="Me")]
+    md = render_markdown(gated, ref)
+    assert "not gate-verified" in md
+    assert md.index("GatedTool") < md.index("Reference")  # gated board first
+    assert "AutoTool" in md
 
 
 @pytest.mark.parametrize("category,runner_attr", [

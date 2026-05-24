@@ -1,0 +1,20 @@
+[
+  {
+    "category": "er",
+    "tool": "GoldenMatch (auto-config)",
+    "tool_version": "1.18.1",
+    "score": 92.36,
+    "tier_scores": {
+      "1": 0.8929,
+      "2": 0.9783,
+      "3": 0.8842,
+      "4": 0.8235
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldenmatch-auto",
+    "dqbench_version": "1.0.0",
+    "source": "auto-config",
+    "notes": "Auto-config (auto_configure_df). NOT reproducible: persists a learning store (.goldenmatch/memory.db), so the composite swings widely across runs (~57-92 observed). Value shown is one representative cold run \u2014 reference only, never gate-verified."
+  }
+]

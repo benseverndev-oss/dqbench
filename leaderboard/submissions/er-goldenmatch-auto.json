@@ -1,0 +1,15 @@
+{
+  "id": "er-goldenmatch-auto",
+  "category": "er",
+  "tool": "GoldenMatch (auto-config)",
+  "adapter": "goldenmatch-auto",
+  "install": [
+    "goldenmatch==1.18.1",
+    "jellyfish==1.2.1",
+    "RapidFuzz==3.14.5"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "auto-config",
+  "gated": false,
+  "notes": "Auto-config (auto_configure_df). NOT reproducible: persists a learning store (.goldenmatch/memory.db), so the composite swings widely across runs (~57-92 observed). Value shown is one representative cold run \u2014 reference only, never gate-verified."
+}

@@ -82,6 +82,15 @@ invocations (e.g. sampling-based profilers) cannot be accepted until their adapt
 made deterministic — the reproducibility gate will reject them. CI reproduces runs on
 **Python 3.11**; pin your `install` versions so numbers don't drift.
 
+### Reference board (ungated)
+
+Auto-config tools that learn/sample (e.g. GoldenMatch's `auto_configure_df`) are
+genuinely non-reproducible, so they can't sit on the gated board. They can still be
+shown for context in a separate **"Reference — auto-config (not gate-verified)"**
+section. Mark the manifest `"gated": false` — it routes to `leaderboard/reference/`,
+needs no manifest-linkage, and is skipped by the CI verify matrix. Reference entries
+should document their observed run-to-run range in `notes`.
+
 ## Result sources
 
 | `--result-source` / `source` | Meaning |

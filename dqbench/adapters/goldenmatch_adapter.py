@@ -9,6 +9,48 @@ from pathlib import Path
 from dqbench.adapters.base import EntityResolutionAdapter
 
 
+def _pairs_from_clusters(result) -> list[tuple[int, int]]:
+    """All within-cluster pairs from a GoldenMatch DedupeResult."""
+    pairs: list[tuple[int, int]] = []
+    if result.clusters:
+        for cluster in result.clusters.values():
+            members = sorted(cluster["members"])
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    pairs.append((members[i], members[j]))
+    return pairs
+
+
+class GoldenMatchAutoConfigAdapter(EntityResolutionAdapter):
+    """GoldenMatch in auto-config mode (no hand-tuned config).
+
+    NOTE: GoldenMatch's auto-config learns/samples and persists state to
+    `.goldenmatch/memory.db`, so results are NOT reproducible run-to-run — this
+    adapter is for the ungated *reference* board only, never the gated leaderboard.
+    """
+
+    @property
+    def name(self) -> str:
+        return "GoldenMatch (auto-config)"
+
+    @property
+    def version(self) -> str:
+        try:
+            import goldenmatch
+            return goldenmatch.__version__
+        except ImportError:
+            return "not-installed"
+
+    def deduplicate(self, csv_path: Path) -> list[tuple[int, int]]:
+        import goldenmatch
+        import polars as pl
+
+        df = pl.read_csv(csv_path)
+        config = goldenmatch.auto_configure_df(df)
+        result = goldenmatch.dedupe_df(df, config=config)
+        return _pairs_from_clusters(result)
+
+
 class GoldenMatchAdapter(EntityResolutionAdapter):
     @property
     def name(self) -> str:

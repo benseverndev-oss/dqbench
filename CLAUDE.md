@@ -6,7 +6,7 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (247 passing)
+pytest --tb=short -v             # Run tests (251 passing)
 ruff check .                     # Lint
 dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
