@@ -3,17 +3,17 @@
     "category": "pipeline",
     "tool": "GoldenPipe",
     "tool_version": "1.2.0",
-    "score": 71.55,
+    "score": 71.38,
     "tier_scores": {
       "1": 0.7997,
       "2": 0.817,
-      "3": 0.5718
+      "3": 0.5675
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
     "adapter": "goldenpipe",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+    "notes": "Golden suite reference pipeline tool, isolated env, no LLM scorer."
   }
 ]

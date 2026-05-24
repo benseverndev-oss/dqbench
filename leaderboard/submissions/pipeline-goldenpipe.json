@@ -6,9 +6,11 @@
   "install": [
     "goldenpipe==1.2.0",
     "goldenflow==1.1.6",
-    "goldenmatch==1.18.1"
+    "goldenmatch==1.18.1",
+    "jellyfish==1.2.1",
+    "RapidFuzz==3.14.5"
   ],
   "submitter": "DQBench maintainers",
   "source": "reproduced",
-  "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+  "notes": "Golden suite reference pipeline tool, isolated env, no LLM scorer."
 }

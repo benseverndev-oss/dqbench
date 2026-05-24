@@ -26,10 +26,10 @@ Published results across all five categories. Higher is better; the score is the
 
 | Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | GoldenMatch | 1.18.1 | 87.0% | 68.7% | 3.3% | 67.8% | 46.18 | DQBench maintainers | reproduced | 2026-05-24 |
+| 1 | GoldenMatch | 1.18.1 | 87.0% | 81.0% | 67.8% | 67.8% | 76.91 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## Pipeline
 
 | Rank | Tool | Version | T1 | T2 | T3 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | GoldenPipe | 1.2.0 | 80.0% | 81.7% | 57.2% | 71.55 | DQBench maintainers | reproduced | 2026-05-24 |
+| 1 | GoldenPipe | 1.2.0 | 80.0% | 81.7% | 56.8% | 71.38 | DQBench maintainers | reproduced | 2026-05-24 |
