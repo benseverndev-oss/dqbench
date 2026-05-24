@@ -525,11 +525,12 @@ def render_markdown(submissions: list[Submission], reference: list[Submission] |
         lines.append("")
 
     if reference:
-        lines.append("# Reference — auto-config (not gate-verified)")
+        lines.append("# Reference — not gate-verified")
         lines.append("")
         lines.append(
             "> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — "
-            "auto-config tools learn/sample and produce different numbers across runs. "
+            "the tools are non-deterministic (auto-config that learns/samples, or "
+            "active-learning matchers), so they produce different numbers across runs. "
             "Shown for reference only; see each entry's notes for the observed range."
         )
         lines.append("")

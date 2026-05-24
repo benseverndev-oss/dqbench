@@ -10,16 +10,18 @@ Published results across all five categories. Higher is better; the score is the
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | GoldenCheck | 1.2.0 | 94.1% | 90.9% | 83.0% | 88.40 | DQBench maintainers | reproduced | 2026-05-24 |
 | 2 | Pandera (best-effort) | 0.31.1 | 36.4% | 38.1% | 25.0% | 32.51 | DQBench maintainers | reproduced | 2026-05-24 |
-| 3 | cuallee (best-effort) | 0.15.4 | 30.0% | 47.6% | 13.8% | 30.56 | DQBench maintainers | reproduced | 2026-05-24 |
-| 4 | Soda (best-effort) | 4.0.0.b1 | 38.1% | 23.5% | 13.3% | 22.36 | DQBench maintainers | reproduced | 2026-05-24 |
-| 5 | GX (best-effort) | 1.17.2 | 36.4% | 23.5% | 12.5% | 21.68 | DQBench maintainers | reproduced | 2026-05-24 |
-| 6 | GX (auto-profiled) | 1.17.2 | 22.2% | 42.1% | 0.0% | 21.29 | DQBench maintainers | reproduced | 2026-05-24 |
-| 7 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
-| 8 | frictionless (schema-inferred) | 5.19.0 | 11.1% | 0.0% | 0.0% | 2.22 | DQBench maintainers | reproduced | 2026-05-24 |
-| 9 | GX (zero-config) | 1.17.2 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 10 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 11 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 12 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 3 | Pointblank (best-effort) | 0.24.0 | 30.0% | 47.6% | 14.8% | 30.97 | DQBench maintainers | reproduced | 2026-05-24 |
+| 4 | cuallee (best-effort) | 0.15.4 | 30.0% | 47.6% | 13.8% | 30.56 | DQBench maintainers | reproduced | 2026-05-24 |
+| 5 | Soda (best-effort) | 4.0.0.b1 | 38.1% | 23.5% | 13.3% | 22.36 | DQBench maintainers | reproduced | 2026-05-24 |
+| 6 | GX (best-effort) | 1.17.2 | 36.4% | 23.5% | 12.5% | 21.68 | DQBench maintainers | reproduced | 2026-05-24 |
+| 7 | GX (auto-profiled) | 1.17.2 | 22.2% | 42.1% | 0.0% | 21.29 | DQBench maintainers | reproduced | 2026-05-24 |
+| 8 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
+| 9 | ydata-profiling (auto-profiled) | 4.18.4 | 0.0% | 11.8% | 0.0% | 4.70 | DQBench maintainers | reproduced | 2026-05-24 |
+| 10 | frictionless (schema-inferred) | 5.19.0 | 11.1% | 0.0% | 0.0% | 2.22 | DQBench maintainers | reproduced | 2026-05-24 |
+| 11 | GX (zero-config) | 1.17.2 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 12 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 13 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 14 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## Transform
 
@@ -44,9 +46,15 @@ Published results across all five categories. Higher is better; the score is the
 | 1 | GoldenSuite (tuned) | 1.2.0 | 80.0% | 81.7% | 67.3% | 75.59 | DQBench maintainers | reproduced | 2026-05-24 |
 | 2 | GoldenPipe | 1.2.0 | 80.0% | 81.7% | 56.8% | 71.38 | DQBench maintainers | reproduced | 2026-05-24 |
 
-# Reference — auto-config (not gate-verified)
+# Reference — not gate-verified
 
-> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — auto-config tools learn/sample and produce different numbers across runs. Shown for reference only; see each entry's notes for the observed range.
+> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — the tools are non-deterministic (auto-config that learns/samples, or active-learning matchers), so they produce different numbers across runs. Shown for reference only; see each entry's notes for the observed range.
+
+## ER
+
+| Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | dedupe | 3.0.3 | 91.6% | 61.0% | 53.4% | 97.4% | 64.08 | DQBench maintainers | third-party | 2026-05-24 |
 
 ## Pipeline
 

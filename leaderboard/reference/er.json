@@ -1,0 +1,20 @@
+[
+  {
+    "category": "er",
+    "tool": "dedupe",
+    "tool_version": "3.0.3",
+    "score": 64.08,
+    "tier_scores": {
+      "1": 0.9159,
+      "2": 0.6103,
+      "3": 0.5338,
+      "4": 0.9744
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "dedupe",
+    "dqbench_version": "1.0.0",
+    "source": "third-party",
+    "notes": "Active-learning matcher run with deterministic weak supervision (shared email/phone -> match, random -> distinct; no ground truth). NOT reproducible: dedupe's training/blocking varies run-to-run even with seeded RNGs. Reference only."
+  }
+]
