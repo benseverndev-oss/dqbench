@@ -100,6 +100,22 @@ pip install dqbench goldenmatch
 dqbench run goldenmatch
 ```
 
+### Leaderboard
+
+Every `dqbench run` records its result under `~/.dqbench/results/` (latest run per
+tool per category wins). View the ranked board at any time:
+
+```bash
+dqbench run all              # populate Detect results
+dqbench run goldenmatch      # add an ER result
+dqbench leaderboard          # ranked tables for every category
+dqbench leaderboard -c er    # just one category
+dqbench leaderboard --json   # machine-readable
+```
+
+Use `dqbench run <adapter> --no-save` to benchmark without recording, and
+`dqbench leaderboard --clear` to reset the board.
+
 ## Tiers
 
 ### Detect
@@ -219,6 +235,11 @@ dqbench run --adapter my_er_adapter.py
 | `dqbench run goldenpipe` | Run Pipeline benchmark with GoldenPipe |
 | `dqbench run placeholder --adapter <path>` | Run a custom OCR Company adapter |
 | `dqbench run goldenmatch --tier 4` | Run only the ER T4 (Mistyped) diagnostic tier |
+| `dqbench run <adapter> --no-save` | Run without recording the result on the leaderboard |
+| `dqbench leaderboard` | Show the ranked leaderboard across all categories |
+| `dqbench leaderboard --category er` | Show the leaderboard for one category |
+| `dqbench leaderboard --json` | Leaderboard as JSON |
+| `dqbench leaderboard --clear` | Delete all recorded results |
 | `dqbench generate` | Generate/cache detection datasets |
 | `dqbench generate --er` | Generate ER benchmark datasets (T1-T4) |
 | `dqbench generate --pipeline` | Generate Pipeline benchmark datasets |
@@ -236,7 +257,7 @@ dqbench run --adapter my_er_adapter.py
 | **Pipeline** | 3 | End-to-end pipeline orchestration |
 | **OCR Company** | 3 | OCR company-name confidence and correction |
 
-Full suite: 178 tests passing across all five categories.
+Full suite: 194 tests passing across all five categories.
 
 ## OCR Company Benchmark
 
