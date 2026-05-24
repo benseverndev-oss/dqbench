@@ -96,6 +96,13 @@ class ERTierResult:
     false_negatives: int
     time_seconds: float
     memory_mb: float
+    # Confusion matrix (pair-level). fp/fn above are the off-diagonal counts.
+    true_positives: int = 0
+    true_negatives: int = 0
+    # B-Cubed (B³) cluster-level metrics — diagnostic, do not affect the composite.
+    bcubed_precision: float = 0.0
+    bcubed_recall: float = 0.0
+    bcubed_f1: float = 0.0
 
 
 @dataclass

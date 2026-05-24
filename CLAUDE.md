@@ -6,7 +6,7 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (242 passing)
+pytest --tb=short -v             # Run tests (247 passing)
 ruff check .                     # Lint
 dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
@@ -76,6 +76,7 @@ T4 has `weights.get(tier, 0) == 0` in `ERScorecard.dqbench_er_score` — reporte
 ### ER
 
 - **Pair-level P/R/F1** against `ERGroundTruth.duplicate_pairs` (pairs normalised to `(min, max)`)
+- **B³ (BCubed) P/R/F1 + confusion matrix** (TP/FP/FN/TN) also reported per tier — diagnostic only, do NOT affect the composite
 - **DQBench ER Score**: `T1_F1 × 20% + T2_F1 × 40% + T3_F1 × 40%` — T4 weight is 0
 - A perfect adapter on `tiers=[1, 2, 3]` scores 100; on `tiers=[4]` it scores 1.0 F1 but 0.0 composite
 

@@ -93,3 +93,50 @@ class TestScoreERTier:
         r = 2 / 5
         expected_f1 = 2 * p * r / (p + r)
         assert result.f1 == pytest.approx(expected_f1)
+
+
+class TestConfusionMatrix:
+    def test_confusion_counts_sum_to_total_pairs(self, ground_truth):
+        predictions = [(0, 50), (1, 51), (2, 52), (3, 53), (4, 54), (10, 60), (20, 70)]
+        result = score_er_tier(predictions, ground_truth, tier=1,
+                               time_seconds=0.0, memory_mb=0.0)
+        n = ground_truth.rows
+        total = n * (n - 1) // 2
+        assert result.true_positives == 5
+        assert result.false_positives == 2
+        assert result.false_negatives == 0
+        assert result.true_negatives == total - 5 - 2 - 0
+        assert (result.true_positives + result.false_positives
+                + result.false_negatives + result.true_negatives) == total
+
+    def test_perfect_has_no_off_diagonal(self, ground_truth):
+        preds = [(0, 50), (1, 51), (2, 52), (3, 53), (4, 54)]
+        result = score_er_tier(preds, ground_truth, tier=1, time_seconds=0.0, memory_mb=0.0)
+        assert result.false_positives == 0 and result.false_negatives == 0
+        assert result.true_positives == 5
+
+
+class TestBCubed:
+    def test_perfect_clustering_is_one(self, ground_truth):
+        preds = [(0, 50), (1, 51), (2, 52), (3, 53), (4, 54)]
+        result = score_er_tier(preds, ground_truth, tier=1, time_seconds=0.0, memory_mb=0.0)
+        assert result.bcubed_precision == pytest.approx(1.0)
+        assert result.bcubed_recall == pytest.approx(1.0)
+        assert result.bcubed_f1 == pytest.approx(1.0)
+
+    def test_empty_predictions_recall_below_one(self, ground_truth):
+        # No links: every singleton predicted. Precision is perfect (each predicted
+        # cluster of size 1 is "pure"), but recall misses the true 2-member clusters.
+        result = score_er_tier([], ground_truth, tier=1, time_seconds=0.0, memory_mb=0.0)
+        assert result.bcubed_precision == pytest.approx(1.0)
+        assert result.bcubed_recall < 1.0
+        assert result.bcubed_f1 < 1.0
+
+    def test_over_merging_drops_precision(self):
+        # One giant predicted cluster {0,1,2,3} but truth has two separate pairs.
+        gt = ERGroundTruth(tier=1, version="1.0.0", rows=4,
+                           duplicate_pairs=[(0, 1), (2, 3)], total_duplicates=2, difficulty="easy")
+        result = score_er_tier([(0, 1), (1, 2), (2, 3)], gt, tier=1, time_seconds=0.0, memory_mb=0.0)
+        # All 4 in one predicted cluster: each element's pred cluster has 2/4 correct.
+        assert result.bcubed_precision == pytest.approx(0.5)
+        assert result.bcubed_recall == pytest.approx(1.0)
