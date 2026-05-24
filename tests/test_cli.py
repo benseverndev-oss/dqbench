@@ -114,60 +114,81 @@ def test_run_no_save_skips_leaderboard(monkeypatch, tmp_path):
     assert lb.load_entries(results_dir=tmp_path / "results") == []
 
 
-DETECT_RUN_JSON = """{
-  "tool_name": "MiniTool",
-  "tool_version": "9.9",
-  "dqbench_score": 42.0,
-  "tiers": [
-    {"tier": 1, "issue_f1": 0.4},
-    {"tier": 2, "issue_f1": 0.45},
-    {"tier": 3, "issue_f1": 0.4}
-  ]
-}"""
+MINI_ADAPTER_SRC = '''
+from pathlib import Path
+from dqbench.adapters.base import DQBenchAdapter
+from dqbench.models import DQBenchFinding
 
 
-def test_submit_publish_flow(tmp_path):
-    run_file = tmp_path / "run.json"
-    run_file.write_text(DETECT_RUN_JSON)
+class MiniAdapter(DQBenchAdapter):
+    @property
+    def name(self) -> str:
+        return "MiniTool"
 
-    result = runner.invoke(app, [
-        "submit", str(run_file), "--submitter", "Tester",
-        "--adapter-ref", "pkg:MiniAdapter", "--repo", str(tmp_path),
-    ])
+    @property
+    def version(self) -> str:
+        return "9.9"
+
+    def validate(self, csv_path: Path) -> list[DQBenchFinding]:
+        return []
+'''
+
+
+def _make_repo(tmp_path):
+    import json as _json
+
+    (tmp_path / "adapter.py").write_text(MINI_ADAPTER_SRC)
+    mdir = tmp_path / "leaderboard" / "submissions"
+    mdir.mkdir(parents=True, exist_ok=True)
+    manifest = mdir / "detect-mini.json"
+    manifest.write_text(_json.dumps({
+        "id": "detect-mini", "category": "detect", "tool": "MiniTool",
+        "adapter_file": "adapter.py", "install": [], "submitter": "Tester",
+        "source": "reproduced",
+    }))
+    return manifest
+
+
+def test_reproduce_write_and_publish_check(tmp_path):
+    manifest = _make_repo(tmp_path)
+    result = runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
     assert result.exit_code == 0, result.output
     assert (tmp_path / "leaderboard" / "results" / "detect.json").exists()
-    assert (tmp_path / "LEADERBOARD.md").exists()
     assert "MiniTool" in (tmp_path / "LEADERBOARD.md").read_text()
 
     check = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
     assert check.exit_code == 0, check.output
 
 
-def test_submit_requires_submitter(tmp_path):
-    run_file = tmp_path / "run.json"
-    run_file.write_text(DETECT_RUN_JSON)
-    result = runner.invoke(app, ["submit", str(run_file), "--repo", str(tmp_path)])
-    assert result.exit_code != 0
+def test_verify_passes_after_reproduce(tmp_path):
+    manifest = _make_repo(tmp_path)
+    runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
+    result = runner.invoke(app, ["verify", str(manifest), "--repo", str(tmp_path)])
+    assert result.exit_code == 0, result.output
 
 
-def test_publish_check_fails_on_stale(tmp_path):
-    run_file = tmp_path / "run.json"
-    run_file.write_text(DETECT_RUN_JSON)
-    runner.invoke(app, [
-        "submit", str(run_file), "--submitter", "Tester",
-        "--repo", str(tmp_path), "--no-publish",
-    ])
-    # store exists but LEADERBOARD.md was never written
+def test_verify_fails_without_entry(tmp_path):
+    manifest = _make_repo(tmp_path)
+    result = runner.invoke(app, ["verify", str(manifest), "--repo", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_publish_check_fails_when_entry_lacks_manifest(tmp_path):
+    # An entry with no backing manifest must be rejected.
+    import json as _json
+    store = tmp_path / "leaderboard" / "results" / "detect.json"
+    store.parent.mkdir(parents=True)
+    store.write_text(_json.dumps([{
+        "category": "detect", "tool": "Ghost", "tool_version": "1.0", "score": 50.0,
+        "tier_scores": {"1": 0.5}, "submitter": "Me", "date": "2026-01-01", "source": "reproduced",
+    }]))
     result = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
     assert result.exit_code == 1
 
 
 def test_leaderboard_source_repo(tmp_path):
-    run_file = tmp_path / "run.json"
-    run_file.write_text(DETECT_RUN_JSON)
-    runner.invoke(app, [
-        "submit", str(run_file), "--submitter", "Tester", "--repo", str(tmp_path),
-    ])
+    manifest = _make_repo(tmp_path)
+    runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
     import json as _json
     import os
     cwd = os.getcwd()

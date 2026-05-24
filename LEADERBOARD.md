@@ -10,10 +10,7 @@ Published results across all five categories. Higher is better; the score is the
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Pandera (best-effort) | 0.31.1 | 36.4% | 38.1% | 25.0% | 32.51 | DQBench maintainers | reproduced | 2026-05-24 |
 | 2 | Soda (best-effort) | 4.0.0.b1 | 38.1% | 23.5% | 13.3% | 22.36 | DQBench maintainers | reproduced | 2026-05-24 |
-| 3 | GX (best-effort) | 1.17.2 | 36.4% | 23.5% | 12.5% | 21.68 | DQBench maintainers | reproduced | 2026-05-24 |
-| 4 | GX (auto-profiled) | 1.17.2 | 22.2% | 42.1% | 0.0% | 21.29 | DQBench maintainers | reproduced | 2026-05-24 |
-| 5 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
-| 6 | GX (zero-config) | 1.17.2 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 7 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 8 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 9 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 3 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
+| 4 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 5 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 6 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |

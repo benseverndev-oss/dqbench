@@ -16,12 +16,50 @@ on:
       - '.github/workflows/leaderboard.yml'
 jobs:
   validate:
+    # Structural gate: every entry has a manifest and LEADERBOARD.md is current.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
       - run: pip install -e .
-      - name: Validate submissions and verify LEADERBOARD.md is current
+      - name: Validate store and verify LEADERBOARD.md is current
         run: dqbench publish --check
+
+  verify:
+    # Reproducibility gate: re-run every changed manifest and confirm the
+    # committed numbers reproduce. Results are only accepted if this passes.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Reproduce and verify changed submission manifests
+        run: |
+          set -uo pipefail
+          base="${{ github.base_ref }}"
+          git fetch origin "$base"
+          changed=$(git diff --name-only "origin/$base...HEAD" -- leaderboard/submissions/ | grep '\.json$' || true)
+          if [ -z "$changed" ]; then
+            echo "No submission manifests changed."
+            exit 0
+          fi
+          status=0
+          for m in $changed; do
+            if [ ! -f "$m" ]; then
+              echo "Manifest $m was removed — skipping."
+              continue
+            fi
+            echo "::group::Verify $m"
+            deps=$(python -c "import json; print(' '.join(json.load(open('$m')).get('install', [])))")
+            if [ -n "$deps" ]; then pip install $deps; fi
+            dqbench verify "$m" || status=1
+            echo "::endgroup::"
+          done
+          exit $status

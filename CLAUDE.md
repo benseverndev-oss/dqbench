@@ -6,12 +6,13 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (221 passing)
+pytest --tb=short -v             # Run tests (233 passing)
 ruff check .                     # Lint
 dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
 dqbench leaderboard              # Local board across categories (--category, --json, --clear, --source repo)
-dqbench submit <run.json> --submitter <who>  # Add a run to the published board store
+dqbench reproduce <manifest> --write  # Run a submission manifest + record it on the published board
+dqbench verify <manifest>        # Reproduce a manifest and confirm its committed entry matches (CI gate)
 dqbench publish [--check]        # Regenerate/verify LEADERBOARD.md from leaderboard/results/
 dqbench generate                 # Generate/cache detection datasets
 dqbench generate --er            # Generate ER datasets (T1-T4)
@@ -23,9 +24,9 @@ dqbench generate --force         # Regenerate from scratch
 
 ```
 dqbench/
-├── cli.py                       # Typer CLI (run, generate, results, leaderboard, submit, publish)
+├── cli.py                       # Typer CLI (run, generate, results, leaderboard, reproduce, verify, publish)
 ├── leaderboard.py               # Local board: persist runs to ~/.dqbench/results/, load + rank
-├── submission.py                # Published board: validate submissions, merge leaderboard/results/, render LEADERBOARD.md
+├── submission.py                # Published board: manifests, reproduce/verify, merge leaderboard/results/, render LEADERBOARD.md
 ├── runner.py                    # Orchestrate adapter against tiers (Detect / Transform / ER / Pipeline / OCR Company)
 ├── scorer.py                    # Detect scoring: recall, precision, F1, DQBench Score
 ├── er_scorer.py                 # ER pair-level P/R/F1
@@ -86,6 +87,8 @@ T4 has `weights.get(tier, 0) == 0` in `ERScorecard.dqbench_er_score` — reporte
 - **Issue matching uses keywords**: `ISSUE_KEYWORDS` dict in `scorer.py`
 - **Adapter interface**: one class, one method per category (`validate`, `transform`, `deduplicate`, `run_pipeline`, `score_companies`)
 - **Three modes per Detect tool**: zero-config, auto-profiled, best-effort
+- **Two leaderboards**: `leaderboard.py` is the local per-user cache (`~/.dqbench/results/`); `submission.py` is the committed public board (`leaderboard/results/` + `LEADERBOARD.md`)
+- **Published results must reproduce**: every entry needs a manifest in `leaderboard/submissions/`; CI re-runs it (`dqbench verify`) and rejects entries whose numbers don't match. Non-deterministic tools (e.g. GX auto-profiling) can't be listed until their adapter is deterministic
 
 ## Gotchas
 

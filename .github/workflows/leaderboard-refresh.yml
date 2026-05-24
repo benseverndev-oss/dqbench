@@ -1,0 +1,36 @@
+name: Leaderboard refresh
+# Reproduces every published result on a clean runner — a standing audit that
+# the committed numbers are still reproducible. Run on demand or weekly.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Reproduce and verify every manifest
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          manifests=(leaderboard/submissions/*.json)
+          if [ ${#manifests[@]} -eq 0 ]; then
+            echo "No manifests to audit."
+            exit 0
+          fi
+          for m in "${manifests[@]}"; do
+            deps=$(python -c "import json; print(' '.join(json.load(open('$m')).get('install', [])))")
+            if [ -n "$deps" ]; then pip install $deps; fi
+          done
+          status=0
+          for m in "${manifests[@]}"; do
+            echo "::group::Audit $m"
+            dqbench verify "$m" || status=1
+            echo "::endgroup::"
+          done
+          exit $status

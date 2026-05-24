@@ -314,39 +314,62 @@ def leaderboard(
 
 
 @app.command()
-def submit(
-    run_json: Path = typer.Argument(..., help="A 'dqbench run --json' output file"),
-    submitter: str = typer.Option(..., "--submitter", help="Who is submitting (name or handle)"),
-    tool: Optional[str] = typer.Option(None, "--tool", help="Override the tool display name"),
-    adapter: str = typer.Option("", "--adapter-ref", help="Adapter reference, e.g. module:Class or a URL"),
-    source: str = typer.Option("reproduced", "--result-source", help="reproduced | vendor-reported | third-party"),
-    notes: str = typer.Option("", "--notes", help="Optional notes (config, hardware, caveats)"),
+def reproduce(
+    manifest: Path = typer.Argument(..., help="A submission manifest JSON (see docs/leaderboard.md)"),
+    write: bool = typer.Option(False, "--write", help="Merge the reproduced result into leaderboard/results/ and republish"),
+    out: Optional[Path] = typer.Option(None, "--out", help="Write the raw run JSON to this file"),
     repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
-    publish_md: bool = typer.Option(True, "--publish/--no-publish", help="Regenerate LEADERBOARD.md after adding"),
 ) -> None:
-    """Add a benchmark run to the published leaderboard store (for a PR submission)."""
+    """Reproduce a submission manifest by running its benchmark, and optionally record it."""
     import json as _json
-    from dqbench.submission import add_submission, publish as publish_board, submission_from_run
+    from dqbench.submission import reproduce as run_manifest, reproduce_and_write
 
     repo = repo or Path.cwd()
-    if not run_json.exists():
-        raise typer.Exit(f"Run file not found: {run_json}")
+    if not manifest.exists():
+        raise typer.Exit(f"Manifest not found: {manifest}")
+    manifest_data = _json.loads(manifest.read_text())
 
-    run_data = _json.loads(run_json.read_text())
     try:
-        submission = submission_from_run(
-            run_data, submitter=submitter, tool=tool,
-            adapter=adapter, source=source, notes=notes,
-        )
-        path = add_submission(submission, root=repo)
+        if write:
+            submission = reproduce_and_write(manifest_data, root=repo)
+            typer.echo(
+                f"Recorded '{submission.tool}' ({submission.category}) "
+                f"score={submission.score} and republished LEADERBOARD.md"
+            )
+            typer.echo("Commit the manifest, leaderboard/results/*.json, and LEADERBOARD.md, then open a PR.")
+        else:
+            run_data = run_manifest(manifest_data, root=repo)
+            if out:
+                out.write_text(_json.dumps(run_data, indent=2) + "\n")
+                typer.echo(f"Wrote {out}")
+            else:
+                _json.dump(run_data, sys.stdout, indent=2)
+                sys.stdout.write("\n")
     except ValueError as e:
         raise typer.Exit(str(e))
 
-    typer.echo(f"Added '{submission.tool}' ({submission.category}) -> {path}")
-    if publish_md:
-        md_path = publish_board(repo)
-        typer.echo(f"Regenerated {md_path}")
-    typer.echo("Commit the changed files and open a pull request to publish.")
+
+@app.command()
+def verify(
+    manifest: Path = typer.Argument(..., help="A submission manifest JSON to reproduce and check"),
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+) -> None:
+    """Reproduce a manifest and confirm its committed leaderboard entry matches (CI gate)."""
+    import json as _json
+    from dqbench.submission import verify as verify_manifest
+
+    repo = repo or Path.cwd()
+    if not manifest.exists():
+        raise typer.Exit(f"Manifest not found: {manifest}")
+    manifest_data = _json.loads(manifest.read_text())
+
+    errors = verify_manifest(manifest_data, root=repo)
+    if errors:
+        typer.echo(f"Verification failed for {manifest}:", err=True)
+        for e in errors:
+            typer.echo(f"  - {e}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"Verified: {manifest_data.get('tool')} reproduces its committed result.")
 
 
 @app.command()
@@ -395,6 +418,13 @@ def _load_adapter(name: str, path: Path | None = None):
     if name in BUILTIN_ADAPTERS:
         module_path, class_name = BUILTIN_ADAPTERS[name].split(":")
         import importlib
+        mod = importlib.import_module(module_path)
+        return getattr(mod, class_name)()
+
+    # Dotted reference to an installed adapter class, e.g. "mypkg.adapters:MyAdapter"
+    if ":" in name:
+        import importlib
+        module_path, class_name = name.split(":", 1)
         mod = importlib.import_module(module_path)
         return getattr(mod, class_name)()
 

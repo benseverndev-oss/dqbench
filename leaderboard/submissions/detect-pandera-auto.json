@@ -1,0 +1,13 @@
+{
+  "id": "detect-pandera-auto",
+  "category": "detect",
+  "tool": "Pandera (auto-profiled)",
+  "adapter": "pandera-auto",
+  "install": [
+    "pandera==0.31.1",
+    "pandas==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+}

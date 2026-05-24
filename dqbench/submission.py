@@ -6,11 +6,17 @@ in the repository: results are committed as JSON under `leaderboard/results/`,
 contributors add entries via pull request, and `LEADERBOARD.md` is regenerated
 from that store.
 
+Acceptance policy: a result is only valid if it can be reproduced by a GitHub
+Action. Each entry must have a *manifest* under `leaderboard/submissions/` that
+declares how to run the benchmark (tool, category, adapter, pinned packages).
+CI re-runs each changed manifest on the PR and rejects any entry whose committed
+numbers do not match the reproduced ones.
+
 Submission flow:
-    dqbench run <adapter> --json > run.json
-    dqbench submit run.json --submitter "Your Name"
-    dqbench publish            # regenerate LEADERBOARD.md
-    # commit leaderboard/results/*.json + LEADERBOARD.md, open a PR
+    # 1. write leaderboard/submissions/<id>.json (see docs/leaderboard.md)
+    dqbench reproduce leaderboard/submissions/<id>.json --write
+    # 2. commit the manifest + leaderboard/results/*.json + LEADERBOARD.md
+    # 3. open a PR — CI verifies the numbers reproduce
 """
 from __future__ import annotations
 
@@ -24,7 +30,11 @@ from dqbench.leaderboard import CATEGORY_META, CATEGORY_ORDER
 
 # Repo-relative locations
 RESULTS_SUBDIR = Path("leaderboard") / "results"
+SUBMISSIONS_SUBDIR = Path("leaderboard") / "submissions"
 LEADERBOARD_MD = Path("LEADERBOARD.md")
+
+# Reproduced numbers are rounded (score 2dp, tier 4dp); this absorbs float repr only.
+REPRODUCE_TOLERANCE = 1e-9
 
 # Map a run-JSON score key back to its category (run JSON does not name the category)
 SCORE_KEY_TO_CATEGORY = {meta["score_attr"]: cat for cat, meta in CATEGORY_META.items()}
@@ -226,6 +236,177 @@ def validate_store(root: Path) -> list[str]:
                 errors.append(f"{path}[{i}]: {err}")
             if entry.get("category") not in (None, cat):
                 errors.append(f"{path}[{i}]: category {entry.get('category')!r} does not match file {cat!r}")
+
+    errors.extend(_validate_manifest_linkage(root))
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Manifests & reproducibility
+# ---------------------------------------------------------------------------
+
+
+def _manifest_dir(root: Path) -> Path:
+    return root / SUBMISSIONS_SUBDIR
+
+
+def load_manifests(root: Path) -> list[dict]:
+    """Load every submission manifest under leaderboard/submissions/."""
+    d = _manifest_dir(root)
+    if not d.exists():
+        return []
+    return [json.loads(p.read_text()) for p in sorted(d.glob("*.json"))]
+
+
+def validate_manifest(d: dict) -> list[str]:
+    """Validate a single manifest; empty list means valid."""
+    errors: list[str] = []
+    if d.get("category") not in CATEGORY_META:
+        errors.append(f"category must be one of {sorted(CATEGORY_META)}, got {d.get('category')!r}")
+    if not str(d.get("tool", "")).strip():
+        errors.append("tool is required and must be non-empty")
+    if not str(d.get("submitter", "")).strip():
+        errors.append("submitter is required and must be non-empty")
+    if not (d.get("adapter") or d.get("adapter_file")):
+        errors.append("manifest must set 'adapter' (built-in name or module:Class) or 'adapter_file'")
+    install = d.get("install", [])
+    if not isinstance(install, list) or any(not isinstance(x, str) for x in install):
+        errors.append("install must be a list of pip requirement strings")
+    if d.get("source", "reproduced") not in VALID_SOURCES:
+        errors.append(f"source must be one of {sorted(VALID_SOURCES)}, got {d.get('source')!r}")
+    return errors
+
+
+def _validate_manifest_linkage(root: Path) -> list[str]:
+    """Every results entry must be backed by a valid manifest (category, tool)."""
+    errors: list[str] = []
+    manifests = load_manifests(root)
+    manifest_keys: set[tuple[str, str]] = set()
+    for m in manifests:
+        merrs = validate_manifest(m)
+        if merrs:
+            errors.append(f"manifest {m.get('id', m.get('tool', '?'))}: " + "; ".join(merrs))
+            continue
+        manifest_keys.add((m["category"], m["tool"]))
+
+    for cat in CATEGORY_ORDER:
+        path = _results_path(root, cat)
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            continue  # JSON error already reported by validate_store
+        if not isinstance(data, list):
+            continue
+        for entry in data:
+            tool = entry.get("tool")
+            if (cat, tool) not in manifest_keys:
+                errors.append(
+                    f"{path}: entry '{tool}' has no reproducible manifest in "
+                    f"{SUBMISSIONS_SUBDIR}/ — leaderboard entries must be reproducible via a GitHub Action."
+                )
+    return errors
+
+
+def load_adapter_from_manifest(manifest: dict, root: Path):
+    """Instantiate the adapter a manifest points at (built-in name, file, or module:Class)."""
+    from dqbench.cli import _load_adapter
+
+    adapter_file = manifest.get("adapter_file")
+    if adapter_file:
+        return _load_adapter("custom", root / adapter_file)
+    spec = manifest.get("adapter")
+    if not spec:
+        raise ValueError("manifest must set 'adapter' or 'adapter_file'")
+    return _load_adapter(spec)
+
+
+def run_adapter_json(adapter, category: str) -> dict:
+    """Run the benchmark for `category` and return the same dict `dqbench run --json` emits."""
+    import io
+
+    from dqbench import report, runner
+
+    runners = {
+        "detect": (runner.run_benchmark, report.report_json),
+        "transform": (runner.run_transform_benchmark, report.report_transform_json),
+        "er": (runner.run_er_benchmark, report.report_er_json),
+        "pipeline": (runner.run_pipeline_benchmark, report.report_pipeline_json),
+        "ocr-company": (runner.run_ocr_company_benchmark, report.report_ocr_company_json),
+    }
+    if category not in runners:
+        raise ValueError(f"Unknown category: {category!r}")
+    run_fn, json_fn = runners[category]
+    scorecard = run_fn(adapter)
+    buf = io.StringIO()
+    json_fn(scorecard, buf)
+    return json.loads(buf.getvalue())
+
+
+def reproduce(manifest: dict, root: Path) -> dict:
+    """Run the benchmark described by a manifest and return its run JSON."""
+    errs = validate_manifest(manifest)
+    if errs:
+        raise ValueError("Invalid manifest:\n  - " + "\n  - ".join(errs))
+    adapter = load_adapter_from_manifest(manifest, root)
+    return run_adapter_json(adapter, manifest["category"])
+
+
+def submission_from_manifest(manifest: dict, run_data: dict) -> Submission:
+    """Build a Submission from a manifest's metadata and a fresh run's numbers."""
+    return submission_from_run(
+        run_data,
+        submitter=manifest["submitter"],
+        category=manifest["category"],
+        tool=manifest.get("tool"),
+        adapter=manifest.get("adapter") or manifest.get("adapter_file", ""),
+        source=manifest.get("source", "reproduced"),
+        notes=manifest.get("notes", ""),
+    )
+
+
+def reproduce_and_write(manifest: dict, root: Path) -> Submission:
+    """Reproduce a manifest's run and merge the result into the published store."""
+    submission = submission_from_manifest(manifest, reproduce(manifest, root))
+    add_submission(submission, root)
+    publish(root)
+    return submission
+
+
+def verify(manifest: dict, root: Path) -> list[str]:
+    """Reproduce a manifest and confirm the committed entry matches. Empty = ok."""
+    errs = validate_manifest(manifest)
+    if errs:
+        return [f"manifest invalid: {e}" for e in errs]
+
+    fresh = submission_from_manifest(manifest, reproduce(manifest, root))
+    match = next(
+        (s for s in load_store(root, category=fresh.category) if s.key() == fresh.key()),
+        None,
+    )
+    if match is None:
+        return [
+            f"no committed entry for {fresh.tool}@{fresh.tool_version} in {fresh.category}; "
+            "run `dqbench reproduce <manifest> --write` and commit the result"
+        ]
+
+    errors: list[str] = []
+    if abs(match.score - fresh.score) > REPRODUCE_TOLERANCE:
+        errors.append(
+            f"{fresh.tool}: score does not reproduce — committed {match.score}, reproduced {fresh.score}"
+        )
+    if set(match.tier_scores) != set(fresh.tier_scores):
+        errors.append(
+            f"{fresh.tool}: tier set does not reproduce — committed {sorted(match.tier_scores)}, "
+            f"reproduced {sorted(fresh.tier_scores)}"
+        )
+    for tier, value in fresh.tier_scores.items():
+        if tier in match.tier_scores and abs(match.tier_scores[tier] - value) > REPRODUCE_TOLERANCE:
+            errors.append(
+                f"{fresh.tool} T{tier}: does not reproduce — committed {match.tier_scores[tier]}, "
+                f"reproduced {value}"
+            )
     return errors
 
 

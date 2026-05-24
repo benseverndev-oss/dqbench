@@ -1,0 +1,13 @@
+{
+  "id": "detect-soda-best",
+  "category": "detect",
+  "tool": "Soda (best-effort)",
+  "adapter": "soda-best",
+  "install": [
+    "soda-core==4.7.0",
+    "pandas==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+}

@@ -11,10 +11,10 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.pandera_adapter:PanderaBestEffortAdapter",
+    "adapter": "pandera-best",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   },
   {
     "category": "detect",
@@ -28,44 +28,10 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.soda_adapter:SodaBestEffortAdapter",
+    "adapter": "soda-best",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
-  },
-  {
-    "category": "detect",
-    "tool": "GX (best-effort)",
-    "tool_version": "1.17.2",
-    "score": 21.68,
-    "tier_scores": {
-      "1": 0.3636,
-      "2": 0.2353,
-      "3": 0.125
-    },
-    "submitter": "DQBench maintainers",
-    "date": "2026-05-24",
-    "adapter": "dqbench.adapters.great_expectations_adapter:GXBestEffortAdapter",
-    "dqbench_version": "1.0.0",
-    "source": "reproduced",
-    "notes": ""
-  },
-  {
-    "category": "detect",
-    "tool": "GX (auto-profiled)",
-    "tool_version": "1.17.2",
-    "score": 21.29,
-    "tier_scores": {
-      "1": 0.2222,
-      "2": 0.4211,
-      "3": 0.0
-    },
-    "submitter": "DQBench maintainers",
-    "date": "2026-05-24",
-    "adapter": "dqbench.adapters.great_expectations_adapter:GXAutoProfileAdapter",
-    "dqbench_version": "1.0.0",
-    "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   },
   {
     "category": "detect",
@@ -79,27 +45,10 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.soda_adapter:SodaAutoProfileAdapter",
+    "adapter": "soda-auto",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
-  },
-  {
-    "category": "detect",
-    "tool": "GX (zero-config)",
-    "tool_version": "1.17.2",
-    "score": 0.0,
-    "tier_scores": {
-      "1": 0.0,
-      "2": 0.0,
-      "3": 0.0
-    },
-    "submitter": "DQBench maintainers",
-    "date": "2026-05-24",
-    "adapter": "dqbench.adapters.great_expectations_adapter:GXZeroConfigAdapter",
-    "dqbench_version": "1.0.0",
-    "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   },
   {
     "category": "detect",
@@ -113,10 +62,10 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.pandera_adapter:PanderaAutoProfileAdapter",
+    "adapter": "pandera-auto",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   },
   {
     "category": "detect",
@@ -130,10 +79,10 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.pandera_adapter:PanderaZeroConfigAdapter",
+    "adapter": "pandera-zero",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   },
   {
     "category": "detect",
@@ -147,9 +96,9 @@
     },
     "submitter": "DQBench maintainers",
     "date": "2026-05-24",
-    "adapter": "dqbench.adapters.soda_adapter:SodaZeroConfigAdapter",
+    "adapter": "soda-zero",
     "dqbench_version": "1.0.0",
     "source": "reproduced",
-    "notes": ""
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
   }
 ]

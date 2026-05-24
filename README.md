@@ -119,19 +119,25 @@ Use `dqbench run <adapter> --no-save` to benchmark without recording, and
 ### Published leaderboard
 
 The repository ships a public, version-controlled board in
-[`LEADERBOARD.md`](LEADERBOARD.md), generated from `leaderboard/results/`. Anyone can
-add their tool via pull request:
+[`LEADERBOARD.md`](LEADERBOARD.md), generated from `leaderboard/results/`.
+
+**Results must reproduce.** Every entry is backed by a manifest under
+`leaderboard/submissions/` that declares how to run the benchmark (tool, adapter,
+pinned packages). CI re-runs each changed manifest on a clean runner and rejects any
+entry whose numbers don't reproduce — so scores can't be hand-edited onto the board.
+
+To submit your tool, add a manifest and reproduce it:
 
 ```bash
-dqbench run mytool --adapter my_adapter.py --json > run.json
-dqbench submit run.json --submitter "Your Name" --adapter-ref "pkg:MyAdapter"
-dqbench publish              # regenerate LEADERBOARD.md
-# commit leaderboard/results/*.json + LEADERBOARD.md and open a PR
+# leaderboard/submissions/detect-mytool.json describes how to run your tool
+dqbench reproduce leaderboard/submissions/detect-mytool.json --write
+dqbench verify    leaderboard/submissions/detect-mytool.json
+# commit the manifest + leaderboard/results/*.json + LEADERBOARD.md, then open a PR
 ```
 
-CI runs `dqbench publish --check` to validate every entry and confirm the board is in
-sync. View the published board with `dqbench leaderboard --source repo`. Full guide:
-[docs/leaderboard.md](docs/leaderboard.md).
+CI gates the PR with `dqbench publish --check` (every entry has a manifest, board in
+sync) and `dqbench verify` (the numbers reproduce). View the published board with
+`dqbench leaderboard --source repo`. Full guide: [docs/leaderboard.md](docs/leaderboard.md).
 
 ## Tiers
 
@@ -258,9 +264,10 @@ dqbench run --adapter my_er_adapter.py
 | `dqbench leaderboard --json` | Leaderboard as JSON |
 | `dqbench leaderboard --source repo` | Show the published (committed) board |
 | `dqbench leaderboard --clear` | Delete all locally recorded results |
-| `dqbench submit <run.json> --submitter <who>` | Add a run to the published leaderboard store |
+| `dqbench reproduce <manifest> --write` | Run a submission manifest and record it on the board |
+| `dqbench verify <manifest>` | Reproduce a manifest and confirm its committed entry matches |
 | `dqbench publish` | Regenerate `LEADERBOARD.md` from the store |
-| `dqbench publish --check` | Validate the store and verify `LEADERBOARD.md` (CI) |
+| `dqbench publish --check` | Validate store + manifests and verify `LEADERBOARD.md` (CI) |
 | `dqbench generate` | Generate/cache detection datasets |
 | `dqbench generate --er` | Generate ER benchmark datasets (T1-T4) |
 | `dqbench generate --pipeline` | Generate Pipeline benchmark datasets |
@@ -278,7 +285,7 @@ dqbench run --adapter my_er_adapter.py
 | **Pipeline** | 3 | End-to-end pipeline orchestration |
 | **OCR Company** | 3 | OCR company-name confidence and correction |
 
-Full suite: 221 tests passing across all five categories.
+Full suite: 233 tests passing across all five categories.
 
 ## OCR Company Benchmark
 

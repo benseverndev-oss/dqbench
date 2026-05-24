@@ -13,9 +13,13 @@ from dqbench.submission import (
     load_store,
     publish,
     render_markdown,
+    reproduce,
+    reproduce_and_write,
     submission_from_run,
+    validate_manifest,
     validate_store,
     validate_submission,
+    verify,
 )
 
 
@@ -30,6 +34,54 @@ def _detect_run(name="Pandera (best-effort)", version="0.31.1", score=32.51):
             {"tier": 3, "issue_f1": 0.25},
         ],
     }
+
+
+def _write_manifest(root, tool, category="detect", adapter="pkg:Cls"):
+    """Write a minimal valid manifest so a results entry passes linkage checks."""
+    import json as _json
+
+    mdir = root / "leaderboard" / "submissions"
+    mdir.mkdir(parents=True, exist_ok=True)
+    slug = tool.lower().replace(" ", "-").replace("(", "").replace(")", "")
+    (mdir / f"{category}-{slug}.json").write_text(_json.dumps({
+        "id": f"{category}-{slug}", "category": category, "tool": tool,
+        "adapter": adapter, "install": [], "submitter": "Me", "source": "reproduced",
+    }))
+
+
+MINI_ADAPTER = '''
+from pathlib import Path
+from dqbench.adapters.base import DQBenchAdapter
+from dqbench.models import DQBenchFinding
+
+
+class MiniAdapter(DQBenchAdapter):
+    @property
+    def name(self) -> str:
+        return "MiniTool"
+
+    @property
+    def version(self) -> str:
+        return "9.9"
+
+    def validate(self, csv_path: Path) -> list[DQBenchFinding]:
+        return []
+'''
+
+
+def _mini_manifest(root):
+    import json as _json
+
+    (root / "adapter.py").write_text(MINI_ADAPTER)
+    manifest = {
+        "id": "detect-mini", "category": "detect", "tool": "MiniTool",
+        "adapter_file": "adapter.py", "install": [], "submitter": "Tester",
+        "source": "reproduced",
+    }
+    mdir = root / "leaderboard" / "submissions"
+    mdir.mkdir(parents=True, exist_ok=True)
+    (mdir / "detect-mini.json").write_text(_json.dumps(manifest))
+    return manifest
 
 
 def test_infer_category_detect():
@@ -134,6 +186,7 @@ def test_render_markdown_empty():
 
 def test_publish_and_check_roundtrip(tmp_path):
     add_submission(submission_from_run(_detect_run(), submitter="Me"), root=tmp_path)
+    _write_manifest(tmp_path, "Pandera (best-effort)")
     publish(tmp_path)
     assert (tmp_path / "LEADERBOARD.md").exists()
     assert check_published(tmp_path) == []
@@ -141,11 +194,72 @@ def test_publish_and_check_roundtrip(tmp_path):
 
 def test_check_published_detects_stale_markdown(tmp_path):
     add_submission(submission_from_run(_detect_run(), submitter="Me"), root=tmp_path)
+    _write_manifest(tmp_path, "Pandera (best-effort)")
     publish(tmp_path)
-    # add another entry but do not re-publish
+    # add another entry (with manifest) but do not re-publish
     add_submission(submission_from_run(_detect_run("Other", score=5.0), submitter="Me"), root=tmp_path)
+    _write_manifest(tmp_path, "Other")
     errors = check_published(tmp_path)
     assert any("out of date" in e for e in errors)
+
+
+def test_store_requires_manifest(tmp_path):
+    add_submission(submission_from_run(_detect_run(), submitter="Me"), root=tmp_path)
+    errors = validate_store(tmp_path)
+    assert any("no reproducible manifest" in e for e in errors)
+
+
+@pytest.mark.parametrize("mutate,fragment", [
+    (lambda d: d.update(category="bogus"), "category"),
+    (lambda d: d.update(tool=""), "tool"),
+    (lambda d: d.update(submitter=""), "submitter"),
+    (lambda d: d.pop("adapter"), "adapter"),
+    (lambda d: d.update(install="pandera"), "install"),
+    (lambda d: d.update(source="weird"), "source"),
+])
+def test_validate_manifest_rejects(mutate, fragment):
+    d = {"id": "x", "category": "detect", "tool": "T", "adapter": "pkg:C",
+         "install": [], "submitter": "Me", "source": "reproduced"}
+    mutate(d)
+    assert any(fragment in e for e in validate_manifest(d))
+
+
+def test_reproduce_runs_adapter(tmp_path):
+    manifest = _mini_manifest(tmp_path)
+    run_data = reproduce(manifest, root=tmp_path)
+    assert run_data["tool_name"] == "MiniTool"
+    assert run_data["dqbench_score"] == 0.0
+    assert len(run_data["tiers"]) == 3
+
+
+def test_reproduce_and_write_then_verify(tmp_path):
+    manifest = _mini_manifest(tmp_path)
+    sub = reproduce_and_write(manifest, root=tmp_path)
+    assert sub.tool == "MiniTool"
+    assert sub.tool_version == "9.9"
+    assert (tmp_path / "LEADERBOARD.md").exists()
+    assert verify(manifest, root=tmp_path) == []
+    assert check_published(tmp_path) == []
+
+
+def test_verify_detects_tampered_score(tmp_path):
+    import json as _json
+
+    manifest = _mini_manifest(tmp_path)
+    reproduce_and_write(manifest, root=tmp_path)
+    store_path = tmp_path / "leaderboard" / "results" / "detect.json"
+    data = _json.loads(store_path.read_text())
+    data[0]["score"] = 99.0
+    store_path.write_text(_json.dumps(data))
+
+    errors = verify(manifest, root=tmp_path)
+    assert any("does not reproduce" in e for e in errors)
+
+
+def test_verify_missing_entry(tmp_path):
+    manifest = _mini_manifest(tmp_path)  # manifest exists, but nothing recorded
+    errors = verify(manifest, root=tmp_path)
+    assert any("no committed entry" in e for e in errors)
 
 
 def test_validate_store_flags_bad_entry(tmp_path):
