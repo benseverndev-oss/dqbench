@@ -16,6 +16,8 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "goldencheck": "dqbench.adapters.goldencheck:GoldenCheckAdapter",
     # GoldenFlow
     "goldenflow": "dqbench.adapters.goldenflow:GoldenFlowAdapter",
+    # pandas cleaning baseline (Transform)
+    "pandas-transform": "dqbench.adapters.pandas_transform_adapter:PandasTransformAdapter",
     # Great Expectations
     "gx-zero":     "dqbench.adapters.great_expectations_adapter:GXZeroConfigAdapter",
     "gx-auto":     "dqbench.adapters.great_expectations_adapter:GXAutoProfileAdapter",
@@ -28,8 +30,14 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "soda-zero":   "dqbench.adapters.soda_adapter:SodaZeroConfigAdapter",
     "soda-auto":   "dqbench.adapters.soda_adapter:SodaAutoProfileAdapter",
     "soda-best":   "dqbench.adapters.soda_adapter:SodaBestEffortAdapter",
+    # cuallee (Detect, third-party)
+    "cuallee":     "dqbench.adapters.cuallee_adapter:CualleeAdapter",
+    # frictionless (Detect, third-party)
+    "frictionless": "dqbench.adapters.frictionless_adapter:FrictionlessAdapter",
     # GoldenMatch (ER)
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
+    # recordlinkage (ER, third-party)
+    "recordlinkage": "dqbench.adapters.recordlinkage_adapter:RecordLinkageAdapter",
     # GoldenPipe (Pipeline)
     "goldenpipe":  "dqbench.adapters.goldenpipe_adapter:GoldenPipeAdapter",
     # Full Golden suite (Pipeline): zero-config engine vs hand-tuned chain
@@ -50,9 +58,11 @@ ALL_ADAPTER_NAMES = [
     "soda-zero",
     "soda-auto",
     "soda-best",
+    "cuallee",
+    "frictionless",
 ]
 
-ER_ADAPTER_NAMES = ["goldenmatch"]
+ER_ADAPTER_NAMES = ["goldenmatch", "recordlinkage"]
 PIPELINE_ADAPTER_NAMES = ["goldenpipe", "goldensuite-zero", "goldensuite-tuned"]
 OCR_COMPANY_ADAPTER_NAMES: list[str] = []
 

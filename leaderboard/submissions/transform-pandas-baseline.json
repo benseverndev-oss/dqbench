@@ -1,0 +1,12 @@
+{
+  "id": "transform-pandas-baseline",
+  "category": "transform",
+  "tool": "pandas (cleaning baseline)",
+  "adapter": "pandas-transform",
+  "install": [
+    "pandas==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Reference cleaning baseline (not a DQ product): pandas normalisations (whitespace, zero-width/smart-quote, phone->E.164, date->ISO, zip). Deterministic."
+}

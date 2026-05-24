@@ -10,23 +10,27 @@ Published results across all five categories. Higher is better; the score is the
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | GoldenCheck | 1.2.0 | 94.1% | 90.9% | 83.0% | 88.40 | DQBench maintainers | reproduced | 2026-05-24 |
 | 2 | Pandera (best-effort) | 0.31.1 | 36.4% | 38.1% | 25.0% | 32.51 | DQBench maintainers | reproduced | 2026-05-24 |
-| 3 | Soda (best-effort) | 4.0.0.b1 | 38.1% | 23.5% | 13.3% | 22.36 | DQBench maintainers | reproduced | 2026-05-24 |
-| 4 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
-| 5 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 6 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
-| 7 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 3 | cuallee (best-effort) | 0.15.4 | 30.0% | 47.6% | 13.8% | 30.56 | DQBench maintainers | reproduced | 2026-05-24 |
+| 4 | Soda (best-effort) | 4.0.0.b1 | 38.1% | 23.5% | 13.3% | 22.36 | DQBench maintainers | reproduced | 2026-05-24 |
+| 5 | Soda (auto-profiled) | 4.0.0.b1 | 0.0% | 11.1% | 6.2% | 6.94 | DQBench maintainers | reproduced | 2026-05-24 |
+| 6 | frictionless (schema-inferred) | 5.19.0 | 11.1% | 0.0% | 0.0% | 2.22 | DQBench maintainers | reproduced | 2026-05-24 |
+| 7 | Pandera (auto-profiled) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 8 | Pandera (zero-config) | 0.31.1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 9 | Soda (zero-config) | 4.0.0.b1 | 0.0% | 0.0% | 0.0% | 0.00 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## Transform
 
 | Rank | Tool | Version | T1 | T2 | T3 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | GoldenFlow | 1.1.6 | 100.0% | 100.0% | 100.0% | 100.00 | DQBench maintainers | reproduced | 2026-05-24 |
+| 2 | pandas (cleaning baseline) | 3.0.3 | 100.0% | 100.0% | 100.0% | 100.00 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## ER
 
 | Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | GoldenMatch | 1.18.1 | 87.0% | 81.0% | 67.8% | 67.8% | 76.91 | DQBench maintainers | reproduced | 2026-05-24 |
+| 1 | recordlinkage | 0.16 | 80.8% | 83.8% | 76.5% | 33.3% | 80.28 | DQBench maintainers | reproduced | 2026-05-24 |
+| 2 | GoldenMatch | 1.18.1 | 87.0% | 81.0% | 67.8% | 67.8% | 76.91 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## Pipeline
 

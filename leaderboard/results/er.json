@@ -1,6 +1,24 @@
 [
   {
     "category": "er",
+    "tool": "recordlinkage",
+    "tool_version": "0.16",
+    "score": 80.28,
+    "tier_scores": {
+      "1": 0.8079,
+      "2": 0.8375,
+      "3": 0.7654,
+      "4": 0.3333
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "recordlinkage",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS ER library; multi-pass blocking + Jaro-Winkler, thresholded (deterministic, no training)."
+  },
+  {
+    "category": "er",
     "tool": "GoldenMatch",
     "tool_version": "1.18.1",
     "score": 76.91,

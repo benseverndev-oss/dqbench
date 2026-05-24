@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- **Third-party OSS tools on the leaderboard** — new adapters and reproducible, version-pinned entries: **recordlinkage** (ER, 80.28 — multi-pass blocking + Jaro-Winkler, deterministic), **cuallee** (Detect, 30.56 — rule-based DQ checks), **frictionless** (Detect, 2.22 — inferred-schema validation), and a **pandas cleaning baseline** (Transform, 100.0). Each runs in its own isolated CI job with pinned deps and passes `dqbench verify`.
 - **Published leaderboard with a reproducibility gate** — a version-controlled, community-submittable board where **results are only accepted if a GitHub Action can reproduce them**. Each entry is backed by a manifest under `leaderboard/submissions/` (tool, category, adapter, pinned packages). New commands: `dqbench reproduce <manifest> [--write]` (run the manifest, optionally record it), `dqbench verify <manifest>` (reproduce and confirm the committed numbers match), `dqbench publish [--check]` (regenerate/verify `LEADERBOARD.md`), and `dqbench leaderboard --source repo`. `dqbench run --adapter` now also accepts a `module:Class` reference.
 - CI: `.github/workflows/leaderboard.yml` gates PRs with `dqbench publish --check` (structural) and `dqbench verify` on each changed manifest (reproduction); `.github/workflows/leaderboard-refresh.yml` audits all manifests on a schedule.
 - Seeded the published board across four categories with reproduced, version-pinned runs: **Detect** (GoldenCheck 88.40, plus Pandera/Soda baselines), **Transform** (GoldenFlow 100.0), **ER** (GoldenMatch 76.91), **Pipeline** (GoldenPipe 71.38). Great Expectations was excluded — its auto-profiling is non-deterministic and fails the reproducibility gate. OCR Company is left open for submissions (no installable third-party tool; the example adapter peeks at ground truth).
@@ -18,7 +19,7 @@
 ### Changed
 - `ensure_er_datasets()` in `dqbench/runner.py` is now per-tier idempotent — users with an existing T1-T3 cache pick up T4 without needing `dqbench generate --force`.
 - Default ER tier list extended to `[1, 2, 3, 4]`; existing callers passing explicit `tiers=` are unaffected.
-- Full test suite: 241 passing (was 161).
+- Full test suite: 242 passing (was 161).
 
 ## v1.1.0 — 2026-03-29
 

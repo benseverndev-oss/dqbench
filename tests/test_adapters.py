@@ -38,6 +38,27 @@ def test_goldensuite_adapters_registered():
     assert isinstance(GoldenSuiteTunedAdapter(), PipelineAdapter)
 
 
+def test_third_party_adapters_registered():
+    from dqbench.adapters.base import (
+        DQBenchAdapter,
+        EntityResolutionAdapter,
+        TransformAdapter,
+    )
+    from dqbench.cli import BUILTIN_ADAPTERS, _load_adapter
+
+    expected = {
+        "recordlinkage": EntityResolutionAdapter,
+        "cuallee": DQBenchAdapter,
+        "frictionless": DQBenchAdapter,
+        "pandas-transform": TransformAdapter,
+    }
+    for name, base in expected.items():
+        assert name in BUILTIN_ADAPTERS, name
+        adapter = _load_adapter(name)  # instantiation must not require the tool installed
+        assert isinstance(adapter, base), name
+        assert adapter.name
+
+
 def test_assemble_dedup_output_keeps_rowid_and_drops_internal():
     import polars as pl
 
