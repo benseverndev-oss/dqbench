@@ -32,9 +32,10 @@ Published results across all five categories. Higher is better; the score is the
 
 | Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Splink | 4.0.16 | 66.7% | 99.9% | 84.6% | 66.7% | 87.14 | DQBench maintainers | reproduced | 2026-05-24 |
-| 2 | recordlinkage | 0.16 | 80.8% | 83.8% | 76.5% | 33.3% | 80.28 | DQBench maintainers | reproduced | 2026-05-24 |
-| 3 | GoldenMatch | 1.18.1 | 87.0% | 81.0% | 67.8% | 67.8% | 76.91 | DQBench maintainers | reproduced | 2026-05-24 |
+| 1 | GoldenMatch (auto-config) | 1.18.1 | 89.3% | 97.8% | 88.4% | 82.3% | 92.36 | DQBench maintainers | auto-config | 2026-05-24 |
+| 2 | Splink | 4.0.16 | 66.7% | 99.9% | 84.6% | 66.7% | 87.14 | DQBench maintainers | reproduced | 2026-05-24 |
+| 3 | recordlinkage | 0.16 | 80.8% | 83.8% | 76.5% | 33.3% | 80.28 | DQBench maintainers | reproduced | 2026-05-24 |
+| 4 | GoldenMatch | 1.18.1 | 87.0% | 81.0% | 67.8% | 67.8% | 76.91 | DQBench maintainers | reproduced | 2026-05-24 |
 
 ## Pipeline
 
@@ -46,12 +47,6 @@ Published results across all five categories. Higher is better; the score is the
 # Reference — auto-config (not gate-verified)
 
 > ⚠️ These runs are **not reproducible** and are **not enforced by CI** — auto-config tools learn/sample and produce different numbers across runs. Shown for reference only; see each entry's notes for the observed range.
-
-## ER
-
-| Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | GoldenMatch (auto-config) | 1.18.1 | 89.3% | 97.8% | 88.4% | 82.3% | 92.36 | DQBench maintainers | auto-config | 2026-05-24 |
 
 ## Pipeline
 

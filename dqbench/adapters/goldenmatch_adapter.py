@@ -24,9 +24,11 @@ def _pairs_from_clusters(result) -> list[tuple[int, int]]:
 class GoldenMatchAutoConfigAdapter(EntityResolutionAdapter):
     """GoldenMatch in auto-config mode (no hand-tuned config).
 
-    NOTE: GoldenMatch's auto-config learns/samples and persists state to
-    `.goldenmatch/memory.db`, so results are NOT reproducible run-to-run — this
-    adapter is for the ungated *reference* board only, never the gated leaderboard.
+    GoldenMatch's ``auto_configure_df`` normally persists a cross-run learning
+    store (``~/.goldenmatch/autoconfig_memory.db``) and seeds each run from the
+    last, which makes results drift run-to-run. This adapter disables that store
+    so the seeded heuristic + refit loop runs deterministically — making the
+    auto-config result reproducible and gate-verifiable.
     """
 
     @property
@@ -42,6 +44,15 @@ class GoldenMatchAutoConfigAdapter(EntityResolutionAdapter):
             return "not-installed"
 
     def deduplicate(self, csv_path: Path) -> list[tuple[int, int]]:
+        import os
+
+        # The memory/LLM flags are read once at import (goldenmatch.core.autoconfig),
+        # so they must be set BEFORE goldenmatch is imported. Disabling the cross-run
+        # memory store removes the only source of non-determinism (the underlying
+        # profiling sample is already seeded), so the run reproduces exactly.
+        os.environ["GOLDENMATCH_AUTOCONFIG_MEMORY"] = "0"
+        os.environ["GOLDENMATCH_AUTOCONFIG_LLM"] = "0"
+
         import goldenmatch
         import polars as pl
 
