@@ -1,0 +1,14 @@
+{
+  "id": "er-goldenmatch-auto",
+  "category": "er",
+  "tool": "GoldenMatch (auto-config)",
+  "adapter": "goldenmatch-auto",
+  "install": [
+    "goldenmatch==1.18.1",
+    "jellyfish==1.2.1",
+    "RapidFuzz==3.14.5"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "auto-config",
+  "notes": "Zero-tuning auto-config (auto_configure_df). Deterministic: the adapter sets GOLDENMATCH_AUTOCONFIG_MEMORY=0 to disable GoldenMatch's cross-run learning store, leaving only seeded sampling, so it reproduces exactly."
+}

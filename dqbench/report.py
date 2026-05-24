@@ -261,8 +261,6 @@ def report_er_rich(scorecard: ERScorecard) -> None:
     table.add_column("Precision", style="green")
     table.add_column("Recall", style="green")
     table.add_column("F1", style="green")
-    table.add_column("FP", style="red")
-    table.add_column("FN", style="red")
     table.add_column("Time", style="dim")
     table.add_column("Memory", style="dim")
 
@@ -272,8 +270,6 @@ def report_er_rich(scorecard: ERScorecard) -> None:
             f"{t.precision:.1%}",
             f"{t.recall:.1%}",
             f"{t.f1:.1%}",
-            str(t.false_positives),
-            str(t.false_negatives),
             f"{t.time_seconds:.2f}s",
             f"{t.memory_mb:.1f} MB",
         )
@@ -282,6 +278,33 @@ def report_er_rich(scorecard: ERScorecard) -> None:
     console.print(
         f"\n[bold]DQBench ER Score: {scorecard.dqbench_er_score:.2f} / 100[/bold]\n"
     )
+
+    # Confusion matrix (pair-level) + B-Cubed cluster metrics (diagnostic).
+    cm_table = Table(
+        title="Confusion Matrix (pairs) & B³ (clusters)",
+        box=box.ROUNDED, show_header=True, header_style="bold yellow",
+    )
+    cm_table.add_column("Tier", style="cyan")
+    cm_table.add_column("TP", justify="right", style="green")
+    cm_table.add_column("FP", justify="right", style="red")
+    cm_table.add_column("FN", justify="right", style="red")
+    cm_table.add_column("TN", justify="right", style="dim")
+    cm_table.add_column("B³ Prec", justify="right", style="green")
+    cm_table.add_column("B³ Rec", justify="right", style="green")
+    cm_table.add_column("B³ F1", justify="right", style="bold green")
+    for t in scorecard.tiers:
+        cm_table.add_row(
+            f"T{t.tier}",
+            str(t.true_positives),
+            str(t.false_positives),
+            str(t.false_negatives),
+            str(t.true_negatives),
+            f"{t.bcubed_precision:.1%}",
+            f"{t.bcubed_recall:.1%}",
+            f"{t.bcubed_f1:.1%}",
+        )
+    console.print(cm_table)
+    console.print()
 
     # Real dataset results if present
     if scorecard.real_datasets:

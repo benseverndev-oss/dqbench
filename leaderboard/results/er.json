@@ -1,6 +1,24 @@
 [
   {
     "category": "er",
+    "tool": "GoldenMatch (auto-config)",
+    "tool_version": "1.18.1",
+    "score": 92.36,
+    "tier_scores": {
+      "1": 0.8929,
+      "2": 0.9783,
+      "3": 0.8842,
+      "4": 0.8235
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldenmatch-auto",
+    "dqbench_version": "1.0.0",
+    "source": "auto-config",
+    "notes": "Zero-tuning auto-config (auto_configure_df). Deterministic: the adapter sets GOLDENMATCH_AUTOCONFIG_MEMORY=0 to disable GoldenMatch's cross-run learning store, leaving only seeded sampling, so it reproduces exactly."
+  },
+  {
+    "category": "er",
     "tool": "Splink",
     "tool_version": "4.0.16",
     "score": 87.14,

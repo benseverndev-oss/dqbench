@@ -82,6 +82,22 @@ invocations (e.g. sampling-based profilers) cannot be accepted until their adapt
 made deterministic — the reproducibility gate will reject them. CI reproduces runs on
 **Python 3.11**; pin your `install` versions so numbers don't drift.
 
+### Reference board (ungated)
+
+Some auto-config tools learn/sample across runs and are genuinely non-reproducible
+(e.g. GoldenPipe's zero-config engine). They can't sit on the gated board, but can be
+shown for context in a separate **"Reference — auto-config (not gate-verified)"**
+section. Mark the manifest `"gated": false` — it routes to `leaderboard/reference/`,
+needs no manifest-linkage, and is skipped by the CI verify matrix. Reference entries
+should document their observed run-to-run range in `notes`.
+
+Before reaching for the reference board, check whether the non-determinism is just
+*persisted state* rather than true randomness. GoldenMatch's `auto_configure_df`, for
+example, looked non-reproducible only because it caches configs in
+`~/.goldenmatch/autoconfig_memory.db` and seeds each run from the last; disabling that
+store (`GOLDENMATCH_AUTOCONFIG_MEMORY=0`) leaves only seeded sampling, so it reproduces
+exactly and earns a place on the *gated* board.
+
 ## Result sources
 
 | `--result-source` / `source` | Meaning |

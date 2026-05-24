@@ -36,6 +36,7 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "frictionless": "dqbench.adapters.frictionless_adapter:FrictionlessAdapter",
     # GoldenMatch (ER)
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
+    "goldenmatch-auto": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAutoConfigAdapter",
     # recordlinkage (ER, third-party)
     "recordlinkage": "dqbench.adapters.recordlinkage_adapter:RecordLinkageAdapter",
     # Splink (ER, third-party)

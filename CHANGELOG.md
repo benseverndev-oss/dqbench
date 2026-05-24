@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- **GoldenMatch auto-config on the leaderboard (ER, 92.36)** — `auto_configure_df` with zero hand-tuning, now the top ER entry (vs Splink 87.14, recordlinkage 80.28, GoldenMatch tuned 76.91). Its run-to-run drift turned out to be GoldenMatch's persisted cross-run learning store (`~/.goldenmatch/autoconfig_memory.db`), not randomness — the profiling sample is already seeded. The new `GoldenMatchAutoConfigAdapter` (`goldenmatch-auto`) disables that store (`GOLDENMATCH_AUTOCONFIG_MEMORY=0`, set before import since the flag is read once at import time), so it reproduces exactly and passes `dqbench verify`.
+- **Ungated "reference" board** — for genuinely non-reproducible auto-config runs that can't pass the gate. Manifests marked `"gated": false` route to `leaderboard/reference/` (no manifest-linkage required, skipped by the CI verify matrix and the refresh audit) and render in a separate "Reference — auto-config (not gate-verified)" section of `LEADERBOARD.md`. Seeded with **GoldenSuite (zero-config)** (Pipeline, ~33.85).
+- **ER B³ (BCubed) metrics + confusion matrix** — `score_er_tier` now also reports cluster-level B-Cubed precision/recall/F1 (built from the pair graph via connected components over all rows) and the full pair-level confusion matrix (TP/FP/FN/TN), surfaced in the ER report (rich + JSON). These are **diagnostic only** — the headline DQBench ER Score stays pair-F1-weighted and unchanged, so published entries don't move.
 - **Third-party OSS tools on the leaderboard** — new adapters and reproducible, version-pinned entries: **Splink** (ER, 87.14 — probabilistic Fellegi-Sunter, seeded), **recordlinkage** (ER, 80.28 — blocking + Jaro-Winkler), **cuallee** (Detect, 30.56 — rule-based DQ checks), **frictionless** (Detect, 2.22 — inferred-schema validation), and a **pandas cleaning baseline** (Transform, 100.0). **Great Expectations** is now included too (Detect: best-effort 21.68, auto-profiled 21.29, zero-config 0.0) — its earlier non-determinism turned out to be dev-environment contamination; in an isolated env with pinned deps it reproduces exactly. Each entry runs in its own isolated CI job and passes `dqbench verify`.
 - **Published leaderboard with a reproducibility gate** — a version-controlled, community-submittable board where **results are only accepted if a GitHub Action can reproduce them**. Each entry is backed by a manifest under `leaderboard/submissions/` (tool, category, adapter, pinned packages). New commands: `dqbench reproduce <manifest> [--write]` (run the manifest, optionally record it), `dqbench verify <manifest>` (reproduce and confirm the committed numbers match), `dqbench publish [--check]` (regenerate/verify `LEADERBOARD.md`), and `dqbench leaderboard --source repo`. `dqbench run --adapter` now also accepts a `module:Class` reference.
 - CI: `.github/workflows/leaderboard.yml` gates PRs with `dqbench publish --check` (structural) and `dqbench verify` on each changed manifest (reproduction); `.github/workflows/leaderboard-refresh.yml` audits all manifests on a schedule.
@@ -19,7 +22,7 @@
 ### Changed
 - `ensure_er_datasets()` in `dqbench/runner.py` is now per-tier idempotent — users with an existing T1-T3 cache pick up T4 without needing `dqbench generate --force`.
 - Default ER tier list extended to `[1, 2, 3, 4]`; existing callers passing explicit `tiers=` are unaffected.
-- Full test suite: 242 passing (was 161).
+- Full test suite: 251 passing (was 161).
 
 ## v1.1.0 — 2026-03-29
 

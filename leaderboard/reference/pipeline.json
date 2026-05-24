@@ -1,0 +1,19 @@
+[
+  {
+    "category": "pipeline",
+    "tool": "GoldenSuite (zero-config)",
+    "tool_version": "1.2.0",
+    "score": 33.85,
+    "tier_scores": {
+      "1": 0.4981,
+      "2": 0.2887,
+      "3": 0.3086
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldensuite-zero",
+    "dqbench_version": "1.0.0",
+    "source": "auto-config",
+    "notes": "Full Golden suite via goldenpipe.run (load->check->flow->dedupe), zero-config. NOT reproducible: auto-config varies run-to-run (~33.8 +/- a row)."
+  }
+]

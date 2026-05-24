@@ -9,6 +9,59 @@ from pathlib import Path
 from dqbench.adapters.base import EntityResolutionAdapter
 
 
+def _pairs_from_clusters(result) -> list[tuple[int, int]]:
+    """All within-cluster pairs from a GoldenMatch DedupeResult."""
+    pairs: list[tuple[int, int]] = []
+    if result.clusters:
+        for cluster in result.clusters.values():
+            members = sorted(cluster["members"])
+            for i in range(len(members)):
+                for j in range(i + 1, len(members)):
+                    pairs.append((members[i], members[j]))
+    return pairs
+
+
+class GoldenMatchAutoConfigAdapter(EntityResolutionAdapter):
+    """GoldenMatch in auto-config mode (no hand-tuned config).
+
+    GoldenMatch's ``auto_configure_df`` normally persists a cross-run learning
+    store (``~/.goldenmatch/autoconfig_memory.db``) and seeds each run from the
+    last, which makes results drift run-to-run. This adapter disables that store
+    so the seeded heuristic + refit loop runs deterministically — making the
+    auto-config result reproducible and gate-verifiable.
+    """
+
+    @property
+    def name(self) -> str:
+        return "GoldenMatch (auto-config)"
+
+    @property
+    def version(self) -> str:
+        try:
+            import goldenmatch
+            return goldenmatch.__version__
+        except ImportError:
+            return "not-installed"
+
+    def deduplicate(self, csv_path: Path) -> list[tuple[int, int]]:
+        import os
+
+        # The memory/LLM flags are read once at import (goldenmatch.core.autoconfig),
+        # so they must be set BEFORE goldenmatch is imported. Disabling the cross-run
+        # memory store removes the only source of non-determinism (the underlying
+        # profiling sample is already seeded), so the run reproduces exactly.
+        os.environ["GOLDENMATCH_AUTOCONFIG_MEMORY"] = "0"
+        os.environ["GOLDENMATCH_AUTOCONFIG_LLM"] = "0"
+
+        import goldenmatch
+        import polars as pl
+
+        df = pl.read_csv(csv_path)
+        config = goldenmatch.auto_configure_df(df)
+        result = goldenmatch.dedupe_df(df, config=config)
+        return _pairs_from_clusters(result)
+
+
 class GoldenMatchAdapter(EntityResolutionAdapter):
     @property
     def name(self) -> str:

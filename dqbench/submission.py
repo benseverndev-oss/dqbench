@@ -31,6 +31,7 @@ from dqbench.leaderboard import CATEGORY_META, CATEGORY_ORDER
 # Repo-relative locations
 RESULTS_SUBDIR = Path("leaderboard") / "results"
 SUBMISSIONS_SUBDIR = Path("leaderboard") / "submissions"
+REFERENCE_SUBDIR = Path("leaderboard") / "reference"
 LEADERBOARD_MD = Path("LEADERBOARD.md")
 
 # Reproduced numbers are rounded (score 2dp, tier 4dp); this absorbs float repr only.
@@ -39,7 +40,7 @@ REPRODUCE_TOLERANCE = 1e-9
 # Map a run-JSON score key back to its category (run JSON does not name the category)
 SCORE_KEY_TO_CATEGORY = {meta["score_attr"]: cat for cat, meta in CATEGORY_META.items()}
 
-VALID_SOURCES = {"reproduced", "vendor-reported", "third-party"}
+VALID_SOURCES = {"reproduced", "vendor-reported", "third-party", "auto-config"}
 
 
 @dataclass
@@ -216,6 +217,37 @@ def add_submission(submission: Submission, root: Path) -> Path:
     return path
 
 
+def _reference_path(root: Path, category: str) -> Path:
+    return root / REFERENCE_SUBDIR / f"{category}.json"
+
+
+def load_reference(root: Path, category: str | None = None) -> list[Submission]:
+    """Load ungated reference entries (auto-config / non-deterministic, not gate-verified)."""
+    cats = [category] if category else CATEGORY_ORDER
+    out: list[Submission] = []
+    for cat in cats:
+        path = _reference_path(root, cat)
+        if not path.exists():
+            continue
+        out.extend(submission_from_dict(d) for d in json.loads(path.read_text()))
+    return out
+
+
+def add_reference(submission: Submission, root: Path) -> Path:
+    """Merge an ungated reference entry (one per tool@version). Not verified by CI."""
+    errors = validate_submission(submission.to_dict())
+    if errors:
+        raise ValueError("Invalid reference entry:\n  - " + "\n  - ".join(errors))
+    path = _reference_path(root, submission.category)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existing: list[dict] = json.loads(path.read_text()) if path.exists() else []
+    merged = [s for s in map(submission_from_dict, existing) if s.key() != submission.key()]
+    merged.append(submission)
+    merged.sort(key=lambda s: (-s.score, s.tool.lower()))
+    path.write_text(json.dumps([s.to_dict() for s in merged], indent=2) + "\n")
+    return path
+
+
 def validate_store(root: Path) -> list[str]:
     """Validate every entry in the published store; returns a flat error list."""
     errors: list[str] = []
@@ -236,6 +268,20 @@ def validate_store(root: Path) -> list[str]:
                 errors.append(f"{path}[{i}]: {err}")
             if entry.get("category") not in (None, cat):
                 errors.append(f"{path}[{i}]: category {entry.get('category')!r} does not match file {cat!r}")
+
+    # Reference entries are ungated (not verified), but must still be schema-valid.
+    for cat in CATEGORY_ORDER:
+        path = _reference_path(root, cat)
+        if not path.exists():
+            continue
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            errors.append(f"{path}: invalid JSON ({e})")
+            continue
+        for i, entry in enumerate(data if isinstance(data, list) else []):
+            for err in validate_submission(entry):
+                errors.append(f"{path}[{i}]: {err}")
 
     errors.extend(_validate_manifest_linkage(root))
     return errors
@@ -287,7 +333,9 @@ def _validate_manifest_linkage(root: Path) -> list[str]:
         if merrs:
             errors.append(f"manifest {m.get('id', m.get('tool', '?'))}: " + "; ".join(merrs))
             continue
-        manifest_keys.add((m["category"], m["tool"]))
+        # Only gated manifests satisfy the gated-entry linkage requirement.
+        if m.get("gated", True):
+            manifest_keys.add((m["category"], m["tool"]))
 
     for cat in CATEGORY_ORDER:
         path = _results_path(root, cat)
@@ -367,15 +415,24 @@ def submission_from_manifest(manifest: dict, run_data: dict) -> Submission:
 
 
 def reproduce_and_write(manifest: dict, root: Path) -> Submission:
-    """Reproduce a manifest's run and merge the result into the published store."""
+    """Reproduce a manifest's run and merge the result into the gated or reference store.
+
+    Manifests with ``"gated": false`` go to the ungated reference store (not
+    verified by CI) — used for non-deterministic auto-config runs.
+    """
     submission = submission_from_manifest(manifest, reproduce(manifest, root))
-    add_submission(submission, root)
+    if manifest.get("gated", True):
+        add_submission(submission, root)
+    else:
+        add_reference(submission, root)
     publish(root)
     return submission
 
 
 def verify(manifest: dict, root: Path) -> list[str]:
     """Reproduce a manifest and confirm the committed entry matches. Empty = ok."""
+    if not manifest.get("gated", True):
+        return []  # ungated reference entries are not gate-verified
     errs = validate_manifest(manifest)
     if errs:
         return [f"manifest invalid: {e}" for e in errs]
@@ -415,22 +472,11 @@ def verify(manifest: dict, root: Path) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def render_markdown(submissions: list[Submission]) -> str:
-    """Render the published board as Markdown for LEADERBOARD.md."""
+def _render_category_tables(lines: list[str], submissions: list[Submission]) -> bool:
+    """Append a per-category ranked table for each non-empty category. Returns True if any."""
     by_cat: dict[str, list[Submission]] = {}
     for s in submissions:
         by_cat.setdefault(s.category, []).append(s)
-
-    lines: list[str] = [
-        "# DQBench Leaderboard",
-        "",
-        "Published results across all five categories. Higher is better; the score is "
-        "the tier-weighted composite (0-100).",
-        "",
-        "> Generated by `dqbench publish` from `leaderboard/results/`. Do not edit by hand — "
-        "see [how to submit](docs/leaderboard.md).",
-        "",
-    ]
 
     any_rows = False
     for cat in CATEGORY_ORDER:
@@ -458,17 +504,43 @@ def render_markdown(submissions: list[Submission]) -> str:
             row.append(s.date or "—")
             lines.append("| " + " | ".join(row) + " |")
         lines.append("")
+    return any_rows
 
-    if not any_rows:
+
+def render_markdown(submissions: list[Submission], reference: list[Submission] | None = None) -> str:
+    """Render the published board as Markdown for LEADERBOARD.md."""
+    lines: list[str] = [
+        "# DQBench Leaderboard",
+        "",
+        "Published results across all five categories. Higher is better; the score is "
+        "the tier-weighted composite (0-100).",
+        "",
+        "> Generated by `dqbench publish` from `leaderboard/results/`. Do not edit by hand — "
+        "see [how to submit](docs/leaderboard.md).",
+        "",
+    ]
+
+    if not _render_category_tables(lines, submissions):
         lines.append("_No results published yet._")
         lines.append("")
+
+    if reference:
+        lines.append("# Reference — auto-config (not gate-verified)")
+        lines.append("")
+        lines.append(
+            "> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — "
+            "auto-config tools learn/sample and produce different numbers across runs. "
+            "Shown for reference only; see each entry's notes for the observed range."
+        )
+        lines.append("")
+        _render_category_tables(lines, reference)
 
     return "\n".join(lines).rstrip() + "\n"
 
 
 def publish(root: Path) -> Path:
-    """Regenerate LEADERBOARD.md from the repo store. Returns the written path."""
-    md = render_markdown(load_store(root))
+    """Regenerate LEADERBOARD.md from the gated + reference stores. Returns the written path."""
+    md = render_markdown(load_store(root), load_reference(root))
     path = root / LEADERBOARD_MD
     path.write_text(md)
     return path
@@ -480,7 +552,7 @@ def check_published(root: Path) -> list[str]:
     if errors:
         return errors
 
-    expected = render_markdown(load_store(root))
+    expected = render_markdown(load_store(root), load_reference(root))
     path = root / LEADERBOARD_MD
     current = path.read_text() if path.exists() else ""
     if current != expected:

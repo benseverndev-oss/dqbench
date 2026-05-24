@@ -44,11 +44,19 @@ jobs:
           base="${{ github.base_ref }}"
           git fetch origin "$base"
           files=$(git diff --name-only --diff-filter=ACMR "origin/$base...HEAD" -- leaderboard/submissions/ | grep '\.json$' || true)
-          if [ -z "$files" ]; then
+          # Only gate manifests with "gated" != false (ungated reference runs are not verified).
+          gated=""
+          for f in $files; do
+            [ -f "$f" ] || continue
+            if python -c "import json,sys; sys.exit(0 if json.load(open('$f')).get('gated', True) else 1)"; then
+              gated="$gated $f"
+            fi
+          done
+          if [ -z "$(echo $gated)" ]; then
             echo "any=false" >> "$GITHUB_OUTPUT"
             echo "manifests=[]" >> "$GITHUB_OUTPUT"
           else
-            arr=$(printf '%s\n' $files | jq -R . | jq -cs .)
+            arr=$(printf '%s\n' $gated | jq -R . | jq -cs .)
             echo "any=true" >> "$GITHUB_OUTPUT"
             echo "manifests=$arr" >> "$GITHUB_OUTPUT"
           fi
