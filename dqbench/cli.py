@@ -32,11 +32,15 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "soda-best":   "dqbench.adapters.soda_adapter:SodaBestEffortAdapter",
     # cuallee (Detect, third-party)
     "cuallee":     "dqbench.adapters.cuallee_adapter:CualleeAdapter",
+    "pointblank":  "dqbench.adapters.pointblank_adapter:PointblankBestEffortAdapter",
+    "ydata-profiling": "dqbench.adapters.ydata_profiling_adapter:YDataProfilingAdapter",
     # frictionless (Detect, third-party)
     "frictionless": "dqbench.adapters.frictionless_adapter:FrictionlessAdapter",
     # GoldenMatch (ER)
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
     "goldenmatch-auto": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAutoConfigAdapter",
+    # dedupe (ER, third-party; active-learning -> ungated reference only)
+    "dedupe": "dqbench.adapters.dedupe_adapter:DedupeAdapter",
     # recordlinkage (ER, third-party)
     "recordlinkage": "dqbench.adapters.recordlinkage_adapter:RecordLinkageAdapter",
     # Splink (ER, third-party)
@@ -63,6 +67,8 @@ ALL_ADAPTER_NAMES = [
     "soda-best",
     "cuallee",
     "frictionless",
+    "pointblank",
+    "ydata-profiling",
 ]
 
 ER_ADAPTER_NAMES = ["goldenmatch", "recordlinkage", "splink"]

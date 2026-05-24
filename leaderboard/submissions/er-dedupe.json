@@ -1,0 +1,13 @@
+{
+  "id": "er-dedupe",
+  "category": "er",
+  "tool": "dedupe",
+  "adapter": "dedupe",
+  "install": [
+    "dedupe==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "third-party",
+  "gated": false,
+  "notes": "Active-learning matcher run with deterministic weak supervision (shared email/phone -> match, random -> distinct; no ground truth). NOT reproducible: dedupe's training/blocking varies run-to-run even with seeded RNGs. Reference only."
+}

@@ -1,0 +1,13 @@
+{
+  "id": "detect-ydata-profiling",
+  "category": "detect",
+  "tool": "ydata-profiling (auto-profiled)",
+  "adapter": "ydata-profiling",
+  "install": [
+    "ydata-profiling==4.18.4",
+    "setuptools==80.10.2"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Profiler, not a validator: minimal-mode profiling (sampling/correlations/duplicates/interactions off, deterministic). MISSING alerts -> null_values (WARNING); other statistical alerts emitted as non-penalised INFO. setuptools<81 pinned for pkg_resources."
+}
