@@ -38,6 +38,8 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
     # recordlinkage (ER, third-party)
     "recordlinkage": "dqbench.adapters.recordlinkage_adapter:RecordLinkageAdapter",
+    # Splink (ER, third-party)
+    "splink": "dqbench.adapters.splink_adapter:SplinkAdapter",
     # GoldenPipe (Pipeline)
     "goldenpipe":  "dqbench.adapters.goldenpipe_adapter:GoldenPipeAdapter",
     # Full Golden suite (Pipeline): zero-config engine vs hand-tuned chain
@@ -62,7 +64,7 @@ ALL_ADAPTER_NAMES = [
     "frictionless",
 ]
 
-ER_ADAPTER_NAMES = ["goldenmatch", "recordlinkage"]
+ER_ADAPTER_NAMES = ["goldenmatch", "recordlinkage", "splink"]
 PIPELINE_ADAPTER_NAMES = ["goldenpipe", "goldensuite-zero", "goldensuite-tuned"]
 OCR_COMPANY_ADAPTER_NAMES: list[str] = []
 

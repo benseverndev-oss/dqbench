@@ -1,6 +1,24 @@
 [
   {
     "category": "er",
+    "tool": "Splink",
+    "tool_version": "4.0.16",
+    "score": 87.14,
+    "tier_scores": {
+      "1": 0.6667,
+      "2": 0.9993,
+      "3": 0.8459,
+      "4": 0.6667
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "splink",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS probabilistic ER (Fellegi-Sunter); u via seeded random sampling, m via EM. Deterministic with seed."
+  },
+  {
+    "category": "er",
     "tool": "recordlinkage",
     "tool_version": "0.16",
     "score": 80.28,

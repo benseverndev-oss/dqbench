@@ -1,0 +1,13 @@
+{
+  "id": "detect-gx-best",
+  "category": "detect",
+  "tool": "GX (best-effort)",
+  "adapter": "gx-best",
+  "install": [
+    "great_expectations==1.17.2",
+    "pandas==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Great Expectations on the Detect datasets. Deterministic in an isolated environment (pinned deps)."
+}

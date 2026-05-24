@@ -48,6 +48,7 @@ def test_third_party_adapters_registered():
 
     expected = {
         "recordlinkage": EntityResolutionAdapter,
+        "splink": EntityResolutionAdapter,
         "cuallee": DQBenchAdapter,
         "frictionless": DQBenchAdapter,
         "pandas-transform": TransformAdapter,

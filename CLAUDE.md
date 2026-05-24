@@ -39,7 +39,7 @@ dqbench/
 ├── er_ground_truth.py           # ER duplicate-pair ground truth
 ├── pipeline_ground_truth.py     # Pipeline ground truth
 ├── generator/                   # Per-category dataset generators (tier1-3 detect, er_tier1-4, pipeline_tier1-3, ocr_company)
-└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow, GoldenSuite full pipeline) + third-party (recordlinkage, cuallee, frictionless, pandas baseline)
+└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow, GoldenSuite full pipeline) + third-party (recordlinkage, Splink, cuallee, frictionless, pandas baseline)
 ```
 
 ## Categories & Tiers
