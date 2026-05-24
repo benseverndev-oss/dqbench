@@ -18,8 +18,9 @@ dqbench generate --force         # Regenerate from scratch
 
 ```
 dqbench/
-├── cli.py           # Typer CLI (run, generate, results, leaderboard)
-├── leaderboard.py   # Persist + rank run results (~/.dqbench/results/)
+├── cli.py           # Typer CLI (run, generate, results, leaderboard, submit, publish)
+├── leaderboard.py   # Local board: persist + rank runs (~/.dqbench/results/)
+├── submission.py    # Published board: validate/merge leaderboard/results/, render LEADERBOARD.md
 ├── runner.py        # Orchestrate adapter against tiers
 ├── scorer.py        # Compute recall, precision, F1, DQBench Score
 ├── report.py        # Rich console + JSON scorecard

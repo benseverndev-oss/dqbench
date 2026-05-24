@@ -114,6 +114,73 @@ def test_run_no_save_skips_leaderboard(monkeypatch, tmp_path):
     assert lb.load_entries(results_dir=tmp_path / "results") == []
 
 
+DETECT_RUN_JSON = """{
+  "tool_name": "MiniTool",
+  "tool_version": "9.9",
+  "dqbench_score": 42.0,
+  "tiers": [
+    {"tier": 1, "issue_f1": 0.4},
+    {"tier": 2, "issue_f1": 0.45},
+    {"tier": 3, "issue_f1": 0.4}
+  ]
+}"""
+
+
+def test_submit_publish_flow(tmp_path):
+    run_file = tmp_path / "run.json"
+    run_file.write_text(DETECT_RUN_JSON)
+
+    result = runner.invoke(app, [
+        "submit", str(run_file), "--submitter", "Tester",
+        "--adapter-ref", "pkg:MiniAdapter", "--repo", str(tmp_path),
+    ])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "leaderboard" / "results" / "detect.json").exists()
+    assert (tmp_path / "LEADERBOARD.md").exists()
+    assert "MiniTool" in (tmp_path / "LEADERBOARD.md").read_text()
+
+    check = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
+    assert check.exit_code == 0, check.output
+
+
+def test_submit_requires_submitter(tmp_path):
+    run_file = tmp_path / "run.json"
+    run_file.write_text(DETECT_RUN_JSON)
+    result = runner.invoke(app, ["submit", str(run_file), "--repo", str(tmp_path)])
+    assert result.exit_code != 0
+
+
+def test_publish_check_fails_on_stale(tmp_path):
+    run_file = tmp_path / "run.json"
+    run_file.write_text(DETECT_RUN_JSON)
+    runner.invoke(app, [
+        "submit", str(run_file), "--submitter", "Tester",
+        "--repo", str(tmp_path), "--no-publish",
+    ])
+    # store exists but LEADERBOARD.md was never written
+    result = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_leaderboard_source_repo(tmp_path):
+    run_file = tmp_path / "run.json"
+    run_file.write_text(DETECT_RUN_JSON)
+    runner.invoke(app, [
+        "submit", str(run_file), "--submitter", "Tester", "--repo", str(tmp_path),
+    ])
+    import json as _json
+    import os
+    cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+        result = runner.invoke(app, ["leaderboard", "--source", "repo", "--json"])
+    finally:
+        os.chdir(cwd)
+    assert result.exit_code == 0
+    data = _json.loads(result.stdout)
+    assert data["detect"][0]["tool_name"] == "MiniTool"
+
+
 def test_leaderboard_clear(monkeypatch, tmp_path):
     import dqbench.leaderboard as lb
     from dqbench.models import Scorecard, TierResult

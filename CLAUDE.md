@@ -6,11 +6,13 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (194 passing)
+pytest --tb=short -v             # Run tests (221 passing)
 ruff check .                     # Lint
-dqbench run <adapter>            # Run benchmark (records result on the leaderboard)
+dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
-dqbench leaderboard              # Ranked board across categories (--category, --json, --clear)
+dqbench leaderboard              # Local board across categories (--category, --json, --clear, --source repo)
+dqbench submit <run.json> --submitter <who>  # Add a run to the published board store
+dqbench publish [--check]        # Regenerate/verify LEADERBOARD.md from leaderboard/results/
 dqbench generate                 # Generate/cache detection datasets
 dqbench generate --er            # Generate ER datasets (T1-T4)
 dqbench generate --all           # Generate datasets for every category
@@ -21,8 +23,9 @@ dqbench generate --force         # Regenerate from scratch
 
 ```
 dqbench/
-├── cli.py                       # Typer CLI (run, generate, results, leaderboard)
-├── leaderboard.py               # Persist run results to ~/.dqbench/results/, load + rank for the board
+├── cli.py                       # Typer CLI (run, generate, results, leaderboard, submit, publish)
+├── leaderboard.py               # Local board: persist runs to ~/.dqbench/results/, load + rank
+├── submission.py                # Published board: validate submissions, merge leaderboard/results/, render LEADERBOARD.md
 ├── runner.py                    # Orchestrate adapter against tiers (Detect / Transform / ER / Pipeline / OCR Company)
 ├── scorer.py                    # Detect scoring: recall, precision, F1, DQBench Score
 ├── er_scorer.py                 # ER pair-level P/R/F1

@@ -272,27 +272,104 @@ def leaderboard(
         help="Filter to one category: detect | transform | er | pipeline | ocr-company",
     ),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
-    clear: bool = typer.Option(False, "--clear", help="Delete all recorded results"),
+    clear: bool = typer.Option(False, "--clear", help="Delete all locally recorded results"),
+    source: str = typer.Option(
+        "local", "--source",
+        help="'local' for your own cached runs, 'repo' for the published board",
+    ),
 ) -> None:
     """Show the ranked leaderboard of benchmarked tools across categories."""
     from dqbench.leaderboard import CATEGORY_META, clear_results, entries_to_json, load_entries
-
-    if clear:
-        clear_results()
-        typer.echo("Leaderboard cleared.")
-        return
 
     if category is not None and category not in CATEGORY_META:
         raise typer.Exit(
             f"Unknown category: '{category}'. Choose from: {', '.join(CATEGORY_META)}"
         )
 
-    entries = load_entries(category=category)
+    if source == "repo":
+        from dqbench.leaderboard import LeaderboardEntry
+        from dqbench.submission import load_store
+        subs = load_store(Path.cwd(), category=category)
+        entries = [
+            LeaderboardEntry(
+                category=s.category, tool_name=s.tool, tool_version=s.tool_version,
+                score=s.score, tier_scores=s.tier_scores, timestamp=s.date,
+            )
+            for s in subs
+        ]
+    elif source == "local":
+        if clear:
+            clear_results()
+            typer.echo("Leaderboard cleared.")
+            return
+        entries = load_entries(category=category)
+    else:
+        raise typer.Exit(f"Unknown source: '{source}'. Choose 'local' or 'repo'.")
+
     if json_output:
         entries_to_json(entries, sys.stdout)
     else:
         from dqbench.report import report_leaderboard_rich
         report_leaderboard_rich(entries, category=category)
+
+
+@app.command()
+def submit(
+    run_json: Path = typer.Argument(..., help="A 'dqbench run --json' output file"),
+    submitter: str = typer.Option(..., "--submitter", help="Who is submitting (name or handle)"),
+    tool: Optional[str] = typer.Option(None, "--tool", help="Override the tool display name"),
+    adapter: str = typer.Option("", "--adapter-ref", help="Adapter reference, e.g. module:Class or a URL"),
+    source: str = typer.Option("reproduced", "--result-source", help="reproduced | vendor-reported | third-party"),
+    notes: str = typer.Option("", "--notes", help="Optional notes (config, hardware, caveats)"),
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+    publish_md: bool = typer.Option(True, "--publish/--no-publish", help="Regenerate LEADERBOARD.md after adding"),
+) -> None:
+    """Add a benchmark run to the published leaderboard store (for a PR submission)."""
+    import json as _json
+    from dqbench.submission import add_submission, publish as publish_board, submission_from_run
+
+    repo = repo or Path.cwd()
+    if not run_json.exists():
+        raise typer.Exit(f"Run file not found: {run_json}")
+
+    run_data = _json.loads(run_json.read_text())
+    try:
+        submission = submission_from_run(
+            run_data, submitter=submitter, tool=tool,
+            adapter=adapter, source=source, notes=notes,
+        )
+        path = add_submission(submission, root=repo)
+    except ValueError as e:
+        raise typer.Exit(str(e))
+
+    typer.echo(f"Added '{submission.tool}' ({submission.category}) -> {path}")
+    if publish_md:
+        md_path = publish_board(repo)
+        typer.echo(f"Regenerated {md_path}")
+    typer.echo("Commit the changed files and open a pull request to publish.")
+
+
+@app.command()
+def publish(
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+    check: bool = typer.Option(False, "--check", help="Validate the store and verify LEADERBOARD.md is current (CI mode)"),
+) -> None:
+    """Regenerate LEADERBOARD.md from the published results store."""
+    from dqbench.submission import check_published, publish as publish_board
+
+    repo = repo or Path.cwd()
+    if check:
+        errors = check_published(repo)
+        if errors:
+            typer.echo("Leaderboard check failed:", err=True)
+            for e in errors:
+                typer.echo(f"  - {e}", err=True)
+            raise typer.Exit(code=1)
+        typer.echo("Leaderboard store is valid and LEADERBOARD.md is up to date.")
+        return
+
+    path = publish_board(repo)
+    typer.echo(f"Wrote {path}")
 
 
 def _load_adapter(name: str, path: Path | None = None):
