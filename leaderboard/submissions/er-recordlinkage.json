@@ -1,0 +1,14 @@
+{
+  "id": "er-recordlinkage",
+  "category": "er",
+  "tool": "recordlinkage",
+  "adapter": "recordlinkage",
+  "install": [
+    "recordlinkage==0.16",
+    "pandas==2.3.3",
+    "jellyfish==1.2.1"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Third-party OSS ER library; multi-pass blocking + Jaro-Winkler, thresholded (deterministic, no training)."
+}

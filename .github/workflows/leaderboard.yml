@@ -1,0 +1,78 @@
+name: Leaderboard
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'leaderboard/**'
+      - 'LEADERBOARD.md'
+      - 'dqbench/submission.py'
+      - '.github/workflows/leaderboard.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'leaderboard/**'
+      - 'LEADERBOARD.md'
+      - 'dqbench/submission.py'
+      - '.github/workflows/leaderboard.yml'
+jobs:
+  validate:
+    # Structural gate: every entry has a manifest and LEADERBOARD.md is current.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Validate store and verify LEADERBOARD.md is current
+        run: dqbench publish --check
+
+  changed:
+    # List the submission manifests touched by this PR.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      manifests: ${{ steps.list.outputs.manifests }}
+      any: ${{ steps.list.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: list
+        run: |
+          set -uo pipefail
+          base="${{ github.base_ref }}"
+          git fetch origin "$base"
+          files=$(git diff --name-only --diff-filter=ACMR "origin/$base...HEAD" -- leaderboard/submissions/ | grep '\.json$' || true)
+          if [ -z "$files" ]; then
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "manifests=[]" >> "$GITHUB_OUTPUT"
+          else
+            arr=$(printf '%s\n' $files | jq -R . | jq -cs .)
+            echo "any=true" >> "$GITHUB_OUTPUT"
+            echo "manifests=$arr" >> "$GITHUB_OUTPUT"
+          fi
+
+  verify:
+    # Reproducibility gate: each changed manifest runs in its OWN clean job with
+    # only its pinned deps, so an entry's numbers depend on nothing but itself.
+    needs: changed
+    if: needs.changed.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest: ${{ fromJson(needs.changed.outputs.manifests) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Install pinned tool deps and verify
+        run: |
+          set -uo pipefail
+          m="${{ matrix.manifest }}"
+          deps=$(python -c "import json; print(' '.join(json.load(open('$m')).get('install', [])))")
+          if [ -n "$deps" ]; then pip install $deps; fi
+          dqbench verify "$m"

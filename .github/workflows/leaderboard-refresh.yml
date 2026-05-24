@@ -1,0 +1,49 @@
+name: Leaderboard refresh
+# Reproduces every published result, each in its own clean job — a standing
+# audit that the committed numbers are still reproducible. On demand or weekly.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+jobs:
+  enumerate:
+    runs-on: ubuntu-latest
+    outputs:
+      manifests: ${{ steps.list.outputs.manifests }}
+      any: ${{ steps.list.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          set -uo pipefail
+          files=$(ls leaderboard/submissions/*.json 2>/dev/null || true)
+          if [ -z "$files" ]; then
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "manifests=[]" >> "$GITHUB_OUTPUT"
+          else
+            arr=$(printf '%s\n' $files | jq -R . | jq -cs .)
+            echo "any=true" >> "$GITHUB_OUTPUT"
+            echo "manifests=$arr" >> "$GITHUB_OUTPUT"
+          fi
+
+  audit:
+    needs: enumerate
+    if: needs.enumerate.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        manifest: ${{ fromJson(needs.enumerate.outputs.manifests) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - name: Install pinned tool deps and verify
+        run: |
+          set -uo pipefail
+          m="${{ matrix.manifest }}"
+          deps=$(python -c "import json; print(' '.join(json.load(open('$m')).get('install', [])))")
+          if [ -n "$deps" ]; then pip install $deps; fi
+          dqbench verify "$m"

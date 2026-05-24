@@ -6,11 +6,14 @@ The standard benchmark for data quality and validation tools — five categories
 
 ```bash
 pip install -e ".[dev]"          # Dev install
-pytest --tb=short -v             # Run tests (194 passing)
+pytest --tb=short -v             # Run tests (242 passing)
 ruff check .                     # Lint
-dqbench run <adapter>            # Run benchmark (records result on the leaderboard)
+dqbench run <adapter>            # Run benchmark (records result on the local leaderboard)
 dqbench run all                  # Head-to-head comparison
-dqbench leaderboard              # Ranked board across categories (--category, --json, --clear)
+dqbench leaderboard              # Local board across categories (--category, --json, --clear, --source repo)
+dqbench reproduce <manifest> --write  # Run a submission manifest + record it on the published board
+dqbench verify <manifest>        # Reproduce a manifest and confirm its committed entry matches (CI gate)
+dqbench publish [--check]        # Regenerate/verify LEADERBOARD.md from leaderboard/results/
 dqbench generate                 # Generate/cache detection datasets
 dqbench generate --er            # Generate ER datasets (T1-T4)
 dqbench generate --all           # Generate datasets for every category
@@ -21,8 +24,9 @@ dqbench generate --force         # Regenerate from scratch
 
 ```
 dqbench/
-├── cli.py                       # Typer CLI (run, generate, results, leaderboard)
-├── leaderboard.py               # Persist run results to ~/.dqbench/results/, load + rank for the board
+├── cli.py                       # Typer CLI (run, generate, results, leaderboard, reproduce, verify, publish)
+├── leaderboard.py               # Local board: persist runs to ~/.dqbench/results/, load + rank
+├── submission.py                # Published board: manifests, reproduce/verify, merge leaderboard/results/, render LEADERBOARD.md
 ├── runner.py                    # Orchestrate adapter against tiers (Detect / Transform / ER / Pipeline / OCR Company)
 ├── scorer.py                    # Detect scoring: recall, precision, F1, DQBench Score
 ├── er_scorer.py                 # ER pair-level P/R/F1
@@ -35,7 +39,7 @@ dqbench/
 ├── er_ground_truth.py           # ER duplicate-pair ground truth
 ├── pipeline_ground_truth.py     # Pipeline ground truth
 ├── generator/                   # Per-category dataset generators (tier1-3 detect, er_tier1-4, pipeline_tier1-3, ocr_company)
-└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow)
+└── adapters/                    # Tool adapters (base ABC + built-ins for GoldenCheck, GX, Pandera, Soda, GoldenMatch, GoldenPipe, GoldenFlow, GoldenSuite full pipeline) + third-party (recordlinkage, Splink, cuallee, frictionless, pandas baseline)
 ```
 
 ## Categories & Tiers
@@ -89,7 +93,7 @@ The adapter interface is the primary extension point. Each adapter implements a 
 
 ## Performance & Testing
 
-- Always run `pytest --tb=short -v` before committing. All 194 tests must pass.
+- Always run `pytest --tb=short -v` before committing. All 242 tests must pass.
 - Always run `ruff check .` for linting.
 - Tier generators use a local `random.Random(42)` instance for deterministic output.
 - Do not use numpy or any external RNG; stick to stdlib `random.Random(42)`.

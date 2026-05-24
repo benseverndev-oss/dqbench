@@ -1,0 +1,12 @@
+{
+  "id": "detect-goldencheck",
+  "category": "detect",
+  "tool": "GoldenCheck",
+  "adapter": "goldencheck",
+  "install": [
+    "goldencheck==1.2.0"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+}

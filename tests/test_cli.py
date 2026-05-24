@@ -114,6 +114,94 @@ def test_run_no_save_skips_leaderboard(monkeypatch, tmp_path):
     assert lb.load_entries(results_dir=tmp_path / "results") == []
 
 
+MINI_ADAPTER_SRC = '''
+from pathlib import Path
+from dqbench.adapters.base import DQBenchAdapter
+from dqbench.models import DQBenchFinding
+
+
+class MiniAdapter(DQBenchAdapter):
+    @property
+    def name(self) -> str:
+        return "MiniTool"
+
+    @property
+    def version(self) -> str:
+        return "9.9"
+
+    def validate(self, csv_path: Path) -> list[DQBenchFinding]:
+        return []
+'''
+
+
+def _make_repo(tmp_path):
+    import json as _json
+
+    (tmp_path / "adapter.py").write_text(MINI_ADAPTER_SRC)
+    mdir = tmp_path / "leaderboard" / "submissions"
+    mdir.mkdir(parents=True, exist_ok=True)
+    manifest = mdir / "detect-mini.json"
+    manifest.write_text(_json.dumps({
+        "id": "detect-mini", "category": "detect", "tool": "MiniTool",
+        "adapter_file": "adapter.py", "install": [], "submitter": "Tester",
+        "source": "reproduced",
+    }))
+    return manifest
+
+
+def test_reproduce_write_and_publish_check(tmp_path):
+    manifest = _make_repo(tmp_path)
+    result = runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "leaderboard" / "results" / "detect.json").exists()
+    assert "MiniTool" in (tmp_path / "LEADERBOARD.md").read_text()
+
+    check = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
+    assert check.exit_code == 0, check.output
+
+
+def test_verify_passes_after_reproduce(tmp_path):
+    manifest = _make_repo(tmp_path)
+    runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
+    result = runner.invoke(app, ["verify", str(manifest), "--repo", str(tmp_path)])
+    assert result.exit_code == 0, result.output
+
+
+def test_verify_fails_without_entry(tmp_path):
+    manifest = _make_repo(tmp_path)
+    result = runner.invoke(app, ["verify", str(manifest), "--repo", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_publish_check_fails_when_entry_lacks_manifest(tmp_path):
+    # An entry with no backing manifest must be rejected.
+    import json as _json
+    store = tmp_path / "leaderboard" / "results" / "detect.json"
+    store.parent.mkdir(parents=True)
+    store.write_text(_json.dumps([{
+        "category": "detect", "tool": "Ghost", "tool_version": "1.0", "score": 50.0,
+        "tier_scores": {"1": 0.5}, "submitter": "Me", "date": "2026-01-01", "source": "reproduced",
+    }]))
+    result = runner.invoke(app, ["publish", "--check", "--repo", str(tmp_path)])
+    assert result.exit_code == 1
+
+
+def test_leaderboard_source_repo(tmp_path):
+    manifest = _make_repo(tmp_path)
+    runner.invoke(app, ["reproduce", str(manifest), "--write", "--repo", str(tmp_path)])
+    import json as _json
+    import os
+    cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+        result = runner.invoke(app, ["leaderboard", "--source", "repo", "--json"])
+    finally:
+        os.chdir(cwd)
+    assert result.exit_code == 0
+    data = _json.loads(result.stdout)
+    assert data["detect"][0]["tool_name"] == "MiniTool"
+
+
 def test_leaderboard_clear(monkeypatch, tmp_path):
     import dqbench.leaderboard as lb
     from dqbench.models import Scorecard, TierResult

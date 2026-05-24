@@ -1,0 +1,206 @@
+[
+  {
+    "category": "detect",
+    "tool": "GoldenCheck",
+    "tool_version": "1.2.0",
+    "score": 88.4,
+    "tier_scores": {
+      "1": 0.9412,
+      "2": 0.9091,
+      "3": 0.8302
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldencheck",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+  },
+  {
+    "category": "detect",
+    "tool": "Pandera (best-effort)",
+    "tool_version": "0.31.1",
+    "score": 32.51,
+    "tier_scores": {
+      "1": 0.3636,
+      "2": 0.381,
+      "3": 0.25
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "pandera-best",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  },
+  {
+    "category": "detect",
+    "tool": "cuallee (best-effort)",
+    "tool_version": "0.15.4",
+    "score": 30.56,
+    "tier_scores": {
+      "1": 0.3,
+      "2": 0.4762,
+      "3": 0.1379
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "cuallee",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS data-quality library; hand-written rule checks (deterministic)."
+  },
+  {
+    "category": "detect",
+    "tool": "Soda (best-effort)",
+    "tool_version": "4.0.0.b1",
+    "score": 22.36,
+    "tier_scores": {
+      "1": 0.381,
+      "2": 0.2353,
+      "3": 0.1333
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "soda-best",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  },
+  {
+    "category": "detect",
+    "tool": "GX (best-effort)",
+    "tool_version": "1.17.2",
+    "score": 21.68,
+    "tier_scores": {
+      "1": 0.3636,
+      "2": 0.2353,
+      "3": 0.125
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "gx-best",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Great Expectations on the Detect datasets. Deterministic in an isolated environment (pinned deps)."
+  },
+  {
+    "category": "detect",
+    "tool": "GX (auto-profiled)",
+    "tool_version": "1.17.2",
+    "score": 21.29,
+    "tier_scores": {
+      "1": 0.2222,
+      "2": 0.4211,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "gx-auto",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Great Expectations on the Detect datasets. Deterministic in an isolated environment (pinned deps)."
+  },
+  {
+    "category": "detect",
+    "tool": "Soda (auto-profiled)",
+    "tool_version": "4.0.0.b1",
+    "score": 6.94,
+    "tier_scores": {
+      "1": 0.0,
+      "2": 0.1111,
+      "3": 0.0625
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "soda-auto",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  },
+  {
+    "category": "detect",
+    "tool": "frictionless (schema-inferred)",
+    "tool_version": "5.19.0",
+    "score": 2.22,
+    "tier_scores": {
+      "1": 0.1111,
+      "2": 0.0,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "frictionless",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS validator; validates against an inferred Table Schema (type/constraint errors). Deterministic."
+  },
+  {
+    "category": "detect",
+    "tool": "GX (zero-config)",
+    "tool_version": "1.17.2",
+    "score": 0.0,
+    "tier_scores": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "gx-zero",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Great Expectations on the Detect datasets. Deterministic in an isolated environment (pinned deps)."
+  },
+  {
+    "category": "detect",
+    "tool": "Pandera (auto-profiled)",
+    "tool_version": "0.31.1",
+    "score": 0.0,
+    "tier_scores": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "pandera-auto",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  },
+  {
+    "category": "detect",
+    "tool": "Pandera (zero-config)",
+    "tool_version": "0.31.1",
+    "score": 0.0,
+    "tier_scores": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "pandera-zero",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  },
+  {
+    "category": "detect",
+    "tool": "Soda (zero-config)",
+    "tool_version": "4.0.0.b1",
+    "score": 0.0,
+    "tier_scores": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "soda-zero",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+  }
+]

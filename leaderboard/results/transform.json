@@ -1,0 +1,36 @@
+[
+  {
+    "category": "transform",
+    "tool": "GoldenFlow",
+    "tool_version": "1.1.6",
+    "score": 100.0,
+    "tier_scores": {
+      "1": 1.0,
+      "2": 1.0,
+      "3": 1.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldenflow",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Golden suite reference tool run on the standard DQBench datasets (no LLM scorer)."
+  },
+  {
+    "category": "transform",
+    "tool": "pandas (cleaning baseline)",
+    "tool_version": "3.0.3",
+    "score": 100.0,
+    "tier_scores": {
+      "1": 1.0,
+      "2": 1.0,
+      "3": 1.0
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "pandas-transform",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Reference cleaning baseline (not a DQ product): pandas normalisations (whitespace, zero-width/smart-quote, phone->E.164, date->ISO, zip). Deterministic."
+  }
+]

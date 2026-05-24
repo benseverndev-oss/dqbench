@@ -46,6 +46,12 @@ Integrate any tool in about 20 lines of code.
 
 **ER T4 — Mistyped** is a diagnostic tier (since DQBench v1.2) where four column names deliberately disagree with their content. It exposes dedupers that fire per-column refinements (name scorers, address normalisation) on noise when the column name doesn't match the data. Reported alongside T1-T3 but excluded from the composite ER score so it doesn't move headline numbers for tools that don't opt in.
 
+## Leaderboard
+
+The published [leaderboard]({{ site.baseurl }}/leaderboard) ranks tools across every category.
+Run `dqbench leaderboard` for your own local board, or submit your tool's results via pull
+request — see the [submission guide]({{ site.baseurl }}/leaderboard).
+
 ## Links
 
 - [GitHub Repository](https://github.com/benzsevern/dqbench)

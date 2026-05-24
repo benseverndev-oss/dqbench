@@ -103,7 +103,7 @@ dqbench run goldenmatch
 ### Leaderboard
 
 Every `dqbench run` records its result under `~/.dqbench/results/` (latest run per
-tool per category wins). View the ranked board at any time:
+tool per category wins). View your local board at any time:
 
 ```bash
 dqbench run all              # populate Detect results
@@ -114,7 +114,30 @@ dqbench leaderboard --json   # machine-readable
 ```
 
 Use `dqbench run <adapter> --no-save` to benchmark without recording, and
-`dqbench leaderboard --clear` to reset the board.
+`dqbench leaderboard --clear` to reset the local board.
+
+### Published leaderboard
+
+The repository ships a public, version-controlled board in
+[`LEADERBOARD.md`](LEADERBOARD.md), generated from `leaderboard/results/`.
+
+**Results must reproduce.** Every entry is backed by a manifest under
+`leaderboard/submissions/` that declares how to run the benchmark (tool, adapter,
+pinned packages). CI re-runs each changed manifest on a clean runner and rejects any
+entry whose numbers don't reproduce — so scores can't be hand-edited onto the board.
+
+To submit your tool, add a manifest and reproduce it:
+
+```bash
+# leaderboard/submissions/detect-mytool.json describes how to run your tool
+dqbench reproduce leaderboard/submissions/detect-mytool.json --write
+dqbench verify    leaderboard/submissions/detect-mytool.json
+# commit the manifest + leaderboard/results/*.json + LEADERBOARD.md, then open a PR
+```
+
+CI gates the PR with `dqbench publish --check` (every entry has a manifest, board in
+sync) and `dqbench verify` (the numbers reproduce). View the published board with
+`dqbench leaderboard --source repo`. Full guide: [docs/leaderboard.md](docs/leaderboard.md).
 
 ## Tiers
 
@@ -232,14 +255,21 @@ dqbench run --adapter my_er_adapter.py
 | `dqbench run <adapter> --tier 2` | Run specific tier only |
 | `dqbench run <adapter> --json` | JSON output |
 | `dqbench run goldenmatch` | Run ER benchmark with GoldenMatch |
-| `dqbench run goldenpipe` | Run Pipeline benchmark with GoldenPipe |
+| `dqbench run goldenpipe` | Run Pipeline benchmark with GoldenPipe (tuned Flow+Match) |
+| `dqbench run goldensuite-tuned` | Full Golden suite pipeline, tuned (Check+Flow+Match) |
+| `dqbench run goldensuite-zero` | Full Golden suite pipeline, zero-config engine |
 | `dqbench run placeholder --adapter <path>` | Run a custom OCR Company adapter |
 | `dqbench run goldenmatch --tier 4` | Run only the ER T4 (Mistyped) diagnostic tier |
 | `dqbench run <adapter> --no-save` | Run without recording the result on the leaderboard |
-| `dqbench leaderboard` | Show the ranked leaderboard across all categories |
+| `dqbench leaderboard` | Show your local ranked leaderboard across all categories |
 | `dqbench leaderboard --category er` | Show the leaderboard for one category |
 | `dqbench leaderboard --json` | Leaderboard as JSON |
-| `dqbench leaderboard --clear` | Delete all recorded results |
+| `dqbench leaderboard --source repo` | Show the published (committed) board |
+| `dqbench leaderboard --clear` | Delete all locally recorded results |
+| `dqbench reproduce <manifest> --write` | Run a submission manifest and record it on the board |
+| `dqbench verify <manifest>` | Reproduce a manifest and confirm its committed entry matches |
+| `dqbench publish` | Regenerate `LEADERBOARD.md` from the store |
+| `dqbench publish --check` | Validate store + manifests and verify `LEADERBOARD.md` (CI) |
 | `dqbench generate` | Generate/cache detection datasets |
 | `dqbench generate --er` | Generate ER benchmark datasets (T1-T4) |
 | `dqbench generate --pipeline` | Generate Pipeline benchmark datasets |
@@ -257,7 +287,7 @@ dqbench run --adapter my_er_adapter.py
 | **Pipeline** | 3 | End-to-end pipeline orchestration |
 | **OCR Company** | 3 | OCR company-name confidence and correction |
 
-Full suite: 194 tests passing across all five categories.
+Full suite: 242 tests passing across all five categories.
 
 ## OCR Company Benchmark
 

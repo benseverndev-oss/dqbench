@@ -1,0 +1,13 @@
+{
+  "id": "detect-cuallee",
+  "category": "detect",
+  "tool": "cuallee (best-effort)",
+  "adapter": "cuallee",
+  "install": [
+    "cuallee==0.15.4",
+    "pandas==2.3.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Third-party OSS data-quality library; hand-written rule checks (deterministic)."
+}

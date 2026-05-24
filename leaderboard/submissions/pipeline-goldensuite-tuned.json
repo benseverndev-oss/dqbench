@@ -1,0 +1,17 @@
+{
+  "id": "pipeline-goldensuite-tuned",
+  "category": "pipeline",
+  "tool": "GoldenSuite (tuned)",
+  "adapter": "goldensuite-tuned",
+  "install": [
+    "goldencheck==1.2.0",
+    "goldenflow==1.1.6",
+    "goldenmatch==1.18.1",
+    "goldenpipe==1.2.0",
+    "jellyfish==1.2.1",
+    "RapidFuzz==3.14.5"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Full Golden suite hand-tuned: GoldenCheck safe auto-fix + tuned GoldenFlow/GoldenMatch. No LLM."
+}

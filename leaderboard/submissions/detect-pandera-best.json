@@ -1,0 +1,13 @@
+{
+  "id": "detect-pandera-best",
+  "category": "detect",
+  "tool": "Pandera (best-effort)",
+  "adapter": "pandera-best",
+  "install": [
+    "pandera==0.31.1",
+    "pandas==3.0.3"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "reproduced",
+  "notes": "Built-in adapter run on the standard DQBench Detect datasets."
+}

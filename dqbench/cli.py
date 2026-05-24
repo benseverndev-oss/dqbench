@@ -16,6 +16,8 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "goldencheck": "dqbench.adapters.goldencheck:GoldenCheckAdapter",
     # GoldenFlow
     "goldenflow": "dqbench.adapters.goldenflow:GoldenFlowAdapter",
+    # pandas cleaning baseline (Transform)
+    "pandas-transform": "dqbench.adapters.pandas_transform_adapter:PandasTransformAdapter",
     # Great Expectations
     "gx-zero":     "dqbench.adapters.great_expectations_adapter:GXZeroConfigAdapter",
     "gx-auto":     "dqbench.adapters.great_expectations_adapter:GXAutoProfileAdapter",
@@ -28,10 +30,21 @@ BUILTIN_ADAPTERS: dict[str, str] = {
     "soda-zero":   "dqbench.adapters.soda_adapter:SodaZeroConfigAdapter",
     "soda-auto":   "dqbench.adapters.soda_adapter:SodaAutoProfileAdapter",
     "soda-best":   "dqbench.adapters.soda_adapter:SodaBestEffortAdapter",
+    # cuallee (Detect, third-party)
+    "cuallee":     "dqbench.adapters.cuallee_adapter:CualleeAdapter",
+    # frictionless (Detect, third-party)
+    "frictionless": "dqbench.adapters.frictionless_adapter:FrictionlessAdapter",
     # GoldenMatch (ER)
     "goldenmatch": "dqbench.adapters.goldenmatch_adapter:GoldenMatchAdapter",
+    # recordlinkage (ER, third-party)
+    "recordlinkage": "dqbench.adapters.recordlinkage_adapter:RecordLinkageAdapter",
+    # Splink (ER, third-party)
+    "splink": "dqbench.adapters.splink_adapter:SplinkAdapter",
     # GoldenPipe (Pipeline)
     "goldenpipe":  "dqbench.adapters.goldenpipe_adapter:GoldenPipeAdapter",
+    # Full Golden suite (Pipeline): zero-config engine vs hand-tuned chain
+    "goldensuite-zero":  "dqbench.adapters.goldenpipe_adapter:GoldenSuiteZeroConfigAdapter",
+    "goldensuite-tuned": "dqbench.adapters.goldenpipe_adapter:GoldenSuiteTunedAdapter",
 }
 
 # Order for comparison tables (by category)
@@ -47,10 +60,12 @@ ALL_ADAPTER_NAMES = [
     "soda-zero",
     "soda-auto",
     "soda-best",
+    "cuallee",
+    "frictionless",
 ]
 
-ER_ADAPTER_NAMES = ["goldenmatch"]
-PIPELINE_ADAPTER_NAMES = ["goldenpipe"]
+ER_ADAPTER_NAMES = ["goldenmatch", "recordlinkage", "splink"]
+PIPELINE_ADAPTER_NAMES = ["goldenpipe", "goldensuite-zero", "goldensuite-tuned"]
 OCR_COMPANY_ADAPTER_NAMES: list[str] = []
 
 
@@ -272,27 +287,127 @@ def leaderboard(
         help="Filter to one category: detect | transform | er | pipeline | ocr-company",
     ),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
-    clear: bool = typer.Option(False, "--clear", help="Delete all recorded results"),
+    clear: bool = typer.Option(False, "--clear", help="Delete all locally recorded results"),
+    source: str = typer.Option(
+        "local", "--source",
+        help="'local' for your own cached runs, 'repo' for the published board",
+    ),
 ) -> None:
     """Show the ranked leaderboard of benchmarked tools across categories."""
     from dqbench.leaderboard import CATEGORY_META, clear_results, entries_to_json, load_entries
-
-    if clear:
-        clear_results()
-        typer.echo("Leaderboard cleared.")
-        return
 
     if category is not None and category not in CATEGORY_META:
         raise typer.Exit(
             f"Unknown category: '{category}'. Choose from: {', '.join(CATEGORY_META)}"
         )
 
-    entries = load_entries(category=category)
+    if source == "repo":
+        from dqbench.leaderboard import LeaderboardEntry
+        from dqbench.submission import load_store
+        subs = load_store(Path.cwd(), category=category)
+        entries = [
+            LeaderboardEntry(
+                category=s.category, tool_name=s.tool, tool_version=s.tool_version,
+                score=s.score, tier_scores=s.tier_scores, timestamp=s.date,
+            )
+            for s in subs
+        ]
+    elif source == "local":
+        if clear:
+            clear_results()
+            typer.echo("Leaderboard cleared.")
+            return
+        entries = load_entries(category=category)
+    else:
+        raise typer.Exit(f"Unknown source: '{source}'. Choose 'local' or 'repo'.")
+
     if json_output:
         entries_to_json(entries, sys.stdout)
     else:
         from dqbench.report import report_leaderboard_rich
         report_leaderboard_rich(entries, category=category)
+
+
+@app.command()
+def reproduce(
+    manifest: Path = typer.Argument(..., help="A submission manifest JSON (see docs/leaderboard.md)"),
+    write: bool = typer.Option(False, "--write", help="Merge the reproduced result into leaderboard/results/ and republish"),
+    out: Optional[Path] = typer.Option(None, "--out", help="Write the raw run JSON to this file"),
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+) -> None:
+    """Reproduce a submission manifest by running its benchmark, and optionally record it."""
+    import json as _json
+    from dqbench.submission import reproduce as run_manifest, reproduce_and_write
+
+    repo = repo or Path.cwd()
+    if not manifest.exists():
+        raise typer.Exit(f"Manifest not found: {manifest}")
+    manifest_data = _json.loads(manifest.read_text())
+
+    try:
+        if write:
+            submission = reproduce_and_write(manifest_data, root=repo)
+            typer.echo(
+                f"Recorded '{submission.tool}' ({submission.category}) "
+                f"score={submission.score} and republished LEADERBOARD.md"
+            )
+            typer.echo("Commit the manifest, leaderboard/results/*.json, and LEADERBOARD.md, then open a PR.")
+        else:
+            run_data = run_manifest(manifest_data, root=repo)
+            if out:
+                out.write_text(_json.dumps(run_data, indent=2) + "\n")
+                typer.echo(f"Wrote {out}")
+            else:
+                _json.dump(run_data, sys.stdout, indent=2)
+                sys.stdout.write("\n")
+    except ValueError as e:
+        raise typer.Exit(str(e))
+
+
+@app.command()
+def verify(
+    manifest: Path = typer.Argument(..., help="A submission manifest JSON to reproduce and check"),
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+) -> None:
+    """Reproduce a manifest and confirm its committed leaderboard entry matches (CI gate)."""
+    import json as _json
+    from dqbench.submission import verify as verify_manifest
+
+    repo = repo or Path.cwd()
+    if not manifest.exists():
+        raise typer.Exit(f"Manifest not found: {manifest}")
+    manifest_data = _json.loads(manifest.read_text())
+
+    errors = verify_manifest(manifest_data, root=repo)
+    if errors:
+        typer.echo(f"Verification failed for {manifest}:", err=True)
+        for e in errors:
+            typer.echo(f"  - {e}", err=True)
+        raise typer.Exit(code=1)
+    typer.echo(f"Verified: {manifest_data.get('tool')} reproduces its committed result.")
+
+
+@app.command()
+def publish(
+    repo: Optional[Path] = typer.Option(None, "--repo", help="Repository root containing leaderboard/ (default: cwd)"),
+    check: bool = typer.Option(False, "--check", help="Validate the store and verify LEADERBOARD.md is current (CI mode)"),
+) -> None:
+    """Regenerate LEADERBOARD.md from the published results store."""
+    from dqbench.submission import check_published, publish as publish_board
+
+    repo = repo or Path.cwd()
+    if check:
+        errors = check_published(repo)
+        if errors:
+            typer.echo("Leaderboard check failed:", err=True)
+            for e in errors:
+                typer.echo(f"  - {e}", err=True)
+            raise typer.Exit(code=1)
+        typer.echo("Leaderboard store is valid and LEADERBOARD.md is up to date.")
+        return
+
+    path = publish_board(repo)
+    typer.echo(f"Wrote {path}")
 
 
 def _load_adapter(name: str, path: Path | None = None):
@@ -318,6 +433,13 @@ def _load_adapter(name: str, path: Path | None = None):
     if name in BUILTIN_ADAPTERS:
         module_path, class_name = BUILTIN_ADAPTERS[name].split(":")
         import importlib
+        mod = importlib.import_module(module_path)
+        return getattr(mod, class_name)()
+
+    # Dotted reference to an installed adapter class, e.g. "mypkg.adapters:MyAdapter"
+    if ":" in name:
+        import importlib
+        module_path, class_name = name.split(":", 1)
         mod = importlib.import_module(module_path)
         return getattr(mod, class_name)()
 

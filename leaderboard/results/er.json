@@ -1,0 +1,56 @@
+[
+  {
+    "category": "er",
+    "tool": "Splink",
+    "tool_version": "4.0.16",
+    "score": 87.14,
+    "tier_scores": {
+      "1": 0.6667,
+      "2": 0.9993,
+      "3": 0.8459,
+      "4": 0.6667
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "splink",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS probabilistic ER (Fellegi-Sunter); u via seeded random sampling, m via EM. Deterministic with seed."
+  },
+  {
+    "category": "er",
+    "tool": "recordlinkage",
+    "tool_version": "0.16",
+    "score": 80.28,
+    "tier_scores": {
+      "1": 0.8079,
+      "2": 0.8375,
+      "3": 0.7654,
+      "4": 0.3333
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "recordlinkage",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Third-party OSS ER library; multi-pass blocking + Jaro-Winkler, thresholded (deterministic, no training)."
+  },
+  {
+    "category": "er",
+    "tool": "GoldenMatch",
+    "tool_version": "1.18.1",
+    "score": 76.91,
+    "tier_scores": {
+      "1": 0.8696,
+      "2": 0.8095,
+      "3": 0.6784,
+      "4": 0.6777
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-24",
+    "adapter": "goldenmatch",
+    "dqbench_version": "1.0.0",
+    "source": "reproduced",
+    "notes": "Golden suite reference ER tool, isolated env, no LLM scorer (deterministic rule-based matching)."
+  }
+]
