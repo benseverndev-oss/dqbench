@@ -1,0 +1,67 @@
+{
+  "tool_name": "goldenmatch-zeroconfig",
+  "tool_version": "1.19.0",
+  "dqbench_er_score": 92.03,
+  "tiers": [
+    {
+      "tier": 1,
+      "precision": 0.8064516129032258,
+      "recall": 1.0,
+      "f1": 0.8928571428571428,
+      "false_positives": 24,
+      "false_negatives": 0,
+      "time_seconds": 6.179726684000002,
+      "memory_mb": 22.93540859222412,
+      "true_positives": 100,
+      "true_negatives": 499376,
+      "bcubed_precision": 0.9813333333333333,
+      "bcubed_recall": 1.0,
+      "bcubed_f1": 0.9905787348586811
+    },
+    {
+      "tier": 2,
+      "precision": 0.967741935483871,
+      "recall": 1.0,
+      "f1": 0.9836065573770492,
+      "false_positives": 25,
+      "false_negatives": 0,
+      "time_seconds": 8.422862856999984,
+      "memory_mb": 12.968893051147461,
+      "true_positives": 750,
+      "true_negatives": 12496725,
+      "bcubed_precision": 0.9971266666666666,
+      "bcubed_recall": 1.0,
+      "bcubed_f1": 0.99856126635266
+    },
+    {
+      "tier": 3,
+      "precision": 0.7710100231303006,
+      "recall": 1.0,
+      "f1": 0.8707009142359599,
+      "false_positives": 594,
+      "false_negatives": 0,
+      "time_seconds": 13.513787817999969,
+      "memory_mb": 51.23470973968506,
+      "true_positives": 2000,
+      "true_negatives": 49992406,
+      "bcubed_precision": 0.9662779365079363,
+      "bcubed_recall": 1.0,
+      "bcubed_f1": 0.9828497981562294
+    },
+    {
+      "tier": 4,
+      "precision": 0.851063829787234,
+      "recall": 1.0,
+      "f1": 0.9195402298850576,
+      "false_positives": 14,
+      "false_negatives": 0,
+      "time_seconds": 2.504372073000013,
+      "memory_mb": 1.9204168319702148,
+      "true_positives": 80,
+      "true_negatives": 319506,
+      "bcubed_precision": 0.985,
+      "bcubed_recall": 1.0,
+      "bcubed_f1": 0.9924433249370278
+    }
+  ]
+}

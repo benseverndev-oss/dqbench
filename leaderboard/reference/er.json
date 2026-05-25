@@ -1,6 +1,24 @@
 [
   {
     "category": "er",
+    "tool": "GoldenMatch (zero-config, native kernels)",
+    "tool_version": "1.19.0",
+    "score": 92.03,
+    "tier_scores": {
+      "1": 0.8929,
+      "2": 0.9836,
+      "3": 0.8707,
+      "4": 0.9195
+    },
+    "submitter": "DQBench maintainers",
+    "date": "2026-05-25",
+    "adapter": "goldenmatch-zeroconfig",
+    "dqbench_version": "1.1.0",
+    "source": "auto-config",
+    "notes": "GoldenMatch 1.19.0 zero-config controller with native Rust kernels (GOLDENMATCH_NATIVE=1). Bit-exact vs pure-Python: composite 92.03 in both modes, identical per-tier F1. Reference (ungated) because the native ext must be built from the goldenmatch repo (not pip-reproducible by CI). DQBench tiers use the polars-direct backend, so block-scoring is not exercised. See docs/validation/2026-05-25-goldenmatch-native-er.md."
+  },
+  {
+    "category": "er",
     "tool": "dedupe",
     "tool_version": "3.0.3",
     "score": 64.08,

@@ -528,10 +528,11 @@ def render_markdown(submissions: list[Submission], reference: list[Submission] |
         lines.append("# Reference — not gate-verified")
         lines.append("")
         lines.append(
-            "> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — "
-            "the tools are non-deterministic (auto-config that learns/samples, or "
-            "active-learning matchers), so they produce different numbers across runs. "
-            "Shown for reference only; see each entry's notes for the observed range."
+            "> ⚠️ These runs are **not enforced by CI** — either the tool is "
+            "non-deterministic (auto-config that learns/samples, or active-learning "
+            "matchers) so it produces different numbers across runs, or reproducing it "
+            "needs a build step the pip-only gate can't perform (e.g. a native "
+            "extension). Shown for reference only; see each entry's notes for details."
         )
         lines.append("")
         _render_category_tables(lines, reference)
