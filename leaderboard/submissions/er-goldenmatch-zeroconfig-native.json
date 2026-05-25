@@ -1,0 +1,13 @@
+{
+  "id": "er-goldenmatch-zeroconfig-native",
+  "category": "er",
+  "tool": "GoldenMatch (zero-config, native kernels)",
+  "adapter": "goldenmatch-zeroconfig",
+  "install": [
+    "goldenmatch @ git+https://github.com/benseverndev-oss/goldenmatch@main"
+  ],
+  "submitter": "DQBench maintainers",
+  "source": "auto-config",
+  "gated": false,
+  "notes": "GoldenMatch 1.19.0 zero-config controller with the native Rust kernels enabled (GOLDENMATCH_NATIVE=1). Adapter lives in the goldenmatch repo at scripts/dqbench_adapters/goldenmatch_zeroconfig.py. NOT CI-reproducible: requires building the goldenmatch._native PyO3 extension via `uv run python scripts/build_native.py` (Rust 1.94.1) — dqbench's pip-only gate cannot build it, so this is a reference (ungated) entry. The run is deterministic and bit-exact vs the pure-Python path (GOLDENMATCH_NATIVE=0): composite 92.03 in both modes, identical per-tier F1/P/R. On DQBench's small tiers the controller selects the polars-direct backend, so the native clustering kernel is exercised but block-scoring (score_block_pairs) is not. See docs/validation/2026-05-25-goldenmatch-native-er.md."
+}

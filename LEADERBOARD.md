@@ -48,13 +48,14 @@ Published results across all five categories. Higher is better; the score is the
 
 # Reference — not gate-verified
 
-> ⚠️ These runs are **not reproducible** and are **not enforced by CI** — the tools are non-deterministic (auto-config that learns/samples, or active-learning matchers), so they produce different numbers across runs. Shown for reference only; see each entry's notes for the observed range.
+> ⚠️ These runs are **not enforced by CI** — either the tool is non-deterministic (auto-config that learns/samples, or active-learning matchers) so it produces different numbers across runs, or reproducing it needs a build step the pip-only gate can't perform (e.g. a native extension). Shown for reference only; see each entry's notes for details.
 
 ## ER
 
 | Rank | Tool | Version | T1 | T2 | T3 | T4 | Score | Submitter | Source | Date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | dedupe | 3.0.3 | 91.6% | 61.0% | 53.4% | 97.4% | 64.08 | DQBench maintainers | third-party | 2026-05-24 |
+| 1 | GoldenMatch (zero-config, native kernels) | 1.19.0 | 89.3% | 98.4% | 87.1% | 92.0% | 92.03 | DQBench maintainers | auto-config | 2026-05-25 |
+| 2 | dedupe | 3.0.3 | 91.6% | 61.0% | 53.4% | 97.4% | 64.08 | DQBench maintainers | third-party | 2026-05-24 |
 
 ## Pipeline
 
